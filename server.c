@@ -23,23 +23,23 @@
 
 void sigchld_handler(int s)
 {
-    // waitpid() might overwrite errno, so we save and restore it:
-    int saved_errno = errno;
+  // waitpid() might overwrite errno, so we save and restore it:
+  int saved_errno = errno;
 
-    while(waitpid(-1, NULL, WNOHANG) > 0);
+  while(waitpid(-1, NULL, WNOHANG) > 0);
 
-    errno = saved_errno;
+  errno = saved_errno;
 }
 
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
+  if (sa->sa_family == AF_INET) {
+    return &(((struct sockaddr_in*)sa)->sin_addr);
+  }
 
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+  return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 int main(void)
@@ -127,7 +127,7 @@ int main(void)
       if (send(new_fd, "Hello, world!", 13, 0) == -1)
         perror("send");
 
-      if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+      if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
         perror("recv");
         exit(1);
       }
