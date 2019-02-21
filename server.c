@@ -29,6 +29,8 @@
 #define BACKLOG 10     // how many pending connections queue will hold
 #define MAXDATASIZE 100
 
+RSA *r = NULL;
+
 void sigchld_handler(int s)
 {
   // waitpid() might overwrite errno, so we save and restore it:
@@ -51,27 +53,23 @@ void *get_in_addr(struct sockaddr *sa)
 
 int createAccount(int sockfd, char* buf, int numbytes)
 {
-  EVP_PKEY *privkey;
-  EVP_PKEY *pubkey;
-  FILE *fp;
-  RSA *r;
+  BIO *pri = BIO_new(BIO_s_mem());
+  BIO *pub = BIO_new(BIO_s_mem());
 
-  OpenSSL_add_all_algorithms();
+  PEM_write_bio_RSAPrivateKey(pri, r, NULL, NULL, 0, NULL, NULL);
+  PEM_write_bio_RSAPublicKey(pub, r);
 
-  privkey = EVP_PKEY_new();
+  size_t pri_len = BIO_pending(pri);
+  size_t pub_len = BIO_pending(pub);
 
-  fp = fopen("public.pem", "r");
+  char *pri_key = malloc(pri_len + 1);
+  char *pub_key = malloc(pub_len + 1);
 
-  PEM_read_PUBKEY(fp, &pubkey, NULL, NULL);
+  BIO_read(pri, pri_key, pri_len);
+  BIO_read(pub, pub_key, pub_len);
 
-  fclose(fp);
-  fp = fopen("private.pem", "r");
-
-  PEM_read_PrivateKey(fp, &privkey, NULL, NULL);
-
-  fclose(fp);
-
-  r = EVP_PKEY_get1_RSA(privkey);
+  pri_key[pri_len] = '\0';
+  pub_key[pub_len] = '\0';
 
   if (RSA_check_key(r)) {
     printf("RSA key is valid\n");
@@ -80,19 +78,26 @@ int createAccount(int sockfd, char* buf, int numbytes)
     return 1;
   }
 
-  PEM_write_PrivateKey(stdout, privkey, NULL, NULL, 0, 0, NULL);
-  PEM_write_PUBKEY(stdout, pubkey);
+  if (send(sockfd, pub_key, 2048, 0) == -1)
+    perror("send");
+
+  printf("server: sent public key\n");
 
   if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
 
-  printf("server: received '%s'\n", buf);
+  char client_public [numbytes];
+  RSA_public_decrypt(RSA_size(r), buf, client_public, r, RSA_PKCS1_PADDING);
 
-  if (send(sockfd, "Hello back!", 11, 0) == -1)
+  printf("server: received '%s'\n", client_public);
+
+  if (send(sockfd, "111", 3, 0) == -1)
     perror("send");
 
+  BIO_free_all(pri);
+  BIO_free_all(pub);
   return 0;
 }
 
@@ -102,10 +107,6 @@ int generate_key_pair()
 	int	ret = 0;
   // variable used to store random numbers
 	BIGNUM *bne = NULL;
-  // RSA key object
-  RSA *r = NULL;
-  // Abstracted IO for the public and private key
-	BIO	*bp_public = NULL, *bp_private = NULL;
 
 	int	bits = 2048;
 	unsigned long	e = RSA_F4;
@@ -124,22 +125,11 @@ int generate_key_pair()
 		goto free_all;
 	}
 
-	// save the public key
-	bp_public = BIO_new_file("public.pem", "w+");
-	ret = PEM_write_bio_RSAPublicKey(bp_public, r);
-	if(ret != 1){
-		goto free_all;
-	}
 
-	// save the private key
-	bp_private = BIO_new_file("private.pem", "w+");
-	ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
 
 	// free the memory of everything
 free_all:
 
-	BIO_free_all(bp_public);
-	BIO_free_all(bp_private);
 	BN_free(bne);
   RSA_free(r);
 
