@@ -16,6 +16,14 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#include <openssl/rsa.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+
+// the configured options and settings for the server
+#define Server_VERSION_MAJOR @Server_VERSION_MAJOR@
+#define Server_VERSION_MINOR @Server_VERSION_MINOR@
+
 #define PORT "3490"  // the port users will be connecting to
 
 #define BACKLOG 10     // how many pending connections queue will hold
@@ -31,7 +39,6 @@ void sigchld_handler(int s)
   errno = saved_errno;
 }
 
-
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -42,14 +49,128 @@ void *get_in_addr(struct sockaddr *sa)
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+int createAccount(int sockfd, char* buf, int numbytes)
+{
+  EVP_PKEY *privkey;
+  EVP_PKEY *pubkey;
+  FILE *fp;
+  RSA *r;
+
+  OpenSSL_add_all_algorithms();
+
+  privkey = EVP_PKEY_new();
+
+  fp = fopen("public.pem", "r");
+
+  PEM_read_PUBKEY(fp, &pubkey, NULL, NULL);
+
+  fclose(fp);
+  fp = fopen("private.pem", "r");
+
+  PEM_read_PrivateKey(fp, &privkey, NULL, NULL);
+
+  fclose(fp);
+
+  r = EVP_PKEY_get1_RSA(privkey);
+
+  if (RSA_check_key(r)) {
+    printf("RSA key is valid\n");
+  } else {
+    printf("RSA key failed check\n");
+    return 1;
+  }
+
+  PEM_write_PrivateKey(stdout, privkey, NULL, NULL, 0, 0, NULL);
+  PEM_write_PUBKEY(stdout, pubkey);
+
+  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+
+  printf("server: received '%s'\n", buf);
+
+  if (send(sockfd, "Hello back!", 11, 0) == -1)
+    perror("send");
+
+  return 0;
+}
+
+int generate_key_pair()
+{
+  // return variable used for checking success
+	int	ret = 0;
+  // variable used to store random numbers
+	BIGNUM *bne = NULL;
+  // RSA key object
+  RSA *r = NULL;
+  // Abstracted IO for the public and private key
+	BIO	*bp_public = NULL, *bp_private = NULL;
+
+	int	bits = 2048;
+	unsigned long	e = RSA_F4;
+
+	// seed the random number generator
+	bne = BN_new();
+	ret = BN_set_word(bne,e);
+	if(ret != 1){
+		goto free_all;
+	}
+
+  // generate a new RSA key pair, and store the result in r
+	r = RSA_new();
+	ret = RSA_generate_key_ex(r, bits, bne, NULL);
+	if(ret != 1){
+		goto free_all;
+	}
+
+	// save the public key
+	bp_public = BIO_new_file("public.pem", "w+");
+	ret = PEM_write_bio_RSAPublicKey(bp_public, r);
+	if(ret != 1){
+		goto free_all;
+	}
+
+	// save the private key
+	bp_private = BIO_new_file("private.pem", "w+");
+	ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
+
+	// free the memory of everything
+free_all:
+
+	BIO_free_all(bp_public);
+	BIO_free_all(bp_private);
+	BN_free(bne);
+  RSA_free(r);
+
+	return (ret == 1);
+}
+
+int selector(char value, int sockfd, char* buf, int numbytes)
+{
+  switch(value) {
+  case 'c':
+    createAccount(sockfd, buf, numbytes);
+    break;
+  case 'r':
+    break;
+  case 'v':
+    break;
+  case 'n':
+    break;
+  }
+  return 0;
+}
+
 int main(void)
 {
+  generate_key_pair();
   int sockfd, new_fd, numbytes;  // listen on sock_fd, new connection on new_fd
   char buf[MAXDATASIZE];
   struct addrinfo hints, *servinfo, *p;
   struct sockaddr_storage their_addr; // connector's address information
   socklen_t sin_size;
-  struct sigaction sa;
+  struct sigaction sa, action;
   int yes=1;
   char s[INET6_ADDRSTRLEN];
   int rv;
@@ -132,8 +253,7 @@ int main(void)
 
       printf("server: received '%s'\n", buf);
 
-      if (send(new_fd, "Hello back!", 11, 0) == -1)
-        perror("send");
+      selector(buf[0], new_fd, buf, numbytes);
 
       close(new_fd);
       exit(0);

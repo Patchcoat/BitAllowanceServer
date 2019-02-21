@@ -1,0 +1,1 @@
+/usr/bin/cc   -rdynamic CMakeFiles/server.dir/server.c.o  -o server /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so 

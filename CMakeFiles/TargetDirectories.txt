@@ -1,0 +1,3 @@
+/home/c1user/Programming/CS246/BitAllowanceServer/CMakeFiles/rebuild_cache.dir
+/home/c1user/Programming/CS246/BitAllowanceServer/CMakeFiles/server.dir
+/home/c1user/Programming/CS246/BitAllowanceServer/CMakeFiles/edit_cache.dir
