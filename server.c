@@ -133,13 +133,10 @@ int generate_key_pair()
 		goto free_all;
 	}
 
-
-
 	// free the memory of everything
 free_all:
 
 	BN_free(bne);
-  RSA_free(r);
 
 	return (ret == 1);
 }
