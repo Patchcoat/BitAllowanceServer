@@ -56,18 +56,23 @@ int createAccount(int sockfd, char* buf, int numbytes)
   printf("reading keys\n");
   BIO *pri = BIO_new(BIO_s_mem());
   BIO *pub = BIO_new(BIO_s_mem());
+  printf("bio started\n");
 
   PEM_write_bio_RSAPrivateKey(pri, r, NULL, NULL, 0, NULL, NULL);
   PEM_write_bio_RSAPublicKey(pub, r);
+  printf("PEM complete\n")
 
   size_t pri_len = BIO_pending(pri);
   size_t pub_len = BIO_pending(pub);
+  printf("loaded key len\n")
 
   char *pri_key = malloc(pri_len + 1);
   char *pub_key = malloc(pub_len + 1);
+  printf("started keys\n")
 
   BIO_read(pri, pri_key, pri_len);
   BIO_read(pub, pub_key, pub_len);
+  printf("loaded key via bio\n")
 
   pri_key[pri_len] = '\0';
   pub_key[pub_len] = '\0';
