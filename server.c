@@ -72,6 +72,8 @@ int createAccount(int sockfd, char* buf, int numbytes)
   pri_key[pri_len] = '\0';
   pub_key[pub_len] = '\0';
 
+  printf("Key Length: %d\nKey: %s\n", pub_len, pub_key);
+
   if (RSA_check_key(r)) {
     printf("RSA key is valid\n");
   } else {
