@@ -53,6 +53,7 @@ void *get_in_addr(struct sockaddr *sa)
 
 int createAccount(int sockfd, char* buf, int numbytes)
 {
+  printf("reading keys\n");
   BIO *pri = BIO_new(BIO_s_mem());
   BIO *pub = BIO_new(BIO_s_mem());
 
@@ -140,6 +141,7 @@ int selector(char value, int sockfd, char* buf, int numbytes)
 {
   switch(value) {
   case 'c':
+    printf("Creating account\n");
     createAccount(sockfd, buf, numbytes);
     break;
   case 'r':
@@ -241,7 +243,7 @@ int main(void)
         exit(1);
       }
 
-      printf("server: received '%s'\n", buf);
+      printf("server: received 1 '%s'\n", buf);
 
       selector(buf[0], new_fd, buf, numbytes);
 
