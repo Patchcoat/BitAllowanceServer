@@ -51,11 +51,6 @@ void *get_in_addr(struct sockaddr *sa)
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void CharToByte(char* chars, byte* bytes, unsigned int count){
-  for(unsigned int i = 0; i < count; i++)
-    bytes[i] = (byte)chars[i];
-}
-
 int generate_key_pair(RSA *r)
 {
   // return variable used for checking success
