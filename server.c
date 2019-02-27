@@ -91,37 +91,42 @@ int createAccount(int sockfd, char* buf, int numbytes)
 
   printf("server: sent public key\n");
 
+  char key[MAXDATASIZE];
+  char username[MAXDATASIZE];
+  char display[MAXDATASIZE];
+  char email[MAXDATASIZE];
+
   // client public key
-  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+  if ((numbytes = recv(sockfd, key, MAXDATASIZE-1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
 
-  printf("server: received key '%s'\n", buf);
+  printf("server: received key '%s'\n", key);
 
   // username
-  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+  if ((numbytes = recv(sockfd, username, MAXDATASIZE-1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
 
-  printf("server: received username '%s'\n", buf);
+  printf("server: received username '%s'\n", username);
 
   // display name
-  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+  if ((numbytes = recv(sockfd, display, MAXDATASIZE-1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
 
-  printf("server: received display name '%s'\n", buf);
+  printf("server: received display name '%s'\n", display);
 
   // email
-  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+  if ((numbytes = recv(sockfd, email, MAXDATASIZE-1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
 
-  printf("server: received email '%s'\n", buf);
+  printf("server: received email '%s'\n", email);
 
   if (send(sockfd, "111\0", 4, 0) == -1)
     perror("send");
