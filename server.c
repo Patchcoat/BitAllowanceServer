@@ -51,65 +51,12 @@ void *get_in_addr(struct sockaddr *sa)
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int createAccount(int sockfd, char* buf, int numbytes)
-{
-  printf("reading keys\n");
-  BIO *pri = BIO_new(BIO_s_mem());
-  BIO *pub = BIO_new(BIO_s_mem());
-  printf("bio started\n");
-
-  PEM_write_bio_RSAPrivateKey(pri, r, NULL, NULL, 0, NULL, NULL);
-  PEM_write_bio_RSAPublicKey(pub, r);
-  printf("PEM complete\n");
-
-  size_t pri_len = BIO_pending(pri);
-  size_t pub_len = BIO_pending(pub);
-  printf("loaded key len\n");
-
-  char *pri_key = malloc(pri_len + 1);
-  char *pub_key = malloc(pub_len + 1);
-  printf("started keys\n");
-
-  BIO_read(pri, pri_key, pri_len);
-  BIO_read(pub, pub_key, pub_len);
-  printf("loaded key via bio\n");
-
-  pri_key[pri_len] = '\0';
-  pub_key[pub_len] = '\0';
-
-  printf("Key Length: %d\nKey: %s\n", pub_len, pub_key);
-
-  if (RSA_check_key(r)) {
-    printf("RSA key is valid\n");
-  } else {
-    printf("RSA key failed check\n");
-    return 1;
-  }
-
-  if (send(sockfd, pub_key, 2048, 0) == -1)
-    perror("send");
-
-  printf("server: sent public key\n");
-
-  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-    perror("recv");
-    exit(1);
-  }
-
-  char client_public [numbytes];
-  RSA_public_decrypt(RSA_size(r), buf, client_public, r, RSA_PKCS1_PADDING);
-
-  printf("server: received '%s'\n", client_public);
-
-  if (send(sockfd, "111", 3, 0) == -1)
-    perror("send");
-
-  BIO_free_all(pri);
-  BIO_free_all(pub);
-  return 0;
+void CharToByte(char* chars, byte* bytes, unsigned int count){
+  for(unsigned int i = 0; i < count; i++)
+    bytes[i] = (byte)chars[i];
 }
 
-int generate_key_pair()
+int generate_key_pair(RSA *r)
 {
   // return variable used for checking success
 	int	ret = 0;
@@ -141,6 +88,62 @@ free_all:
 	return (ret == 1);
 }
 
+int createAccount(int sockfd, char* buf, int numbytes)
+{
+  RSA *r = NULL;
+  generateKeyPair(r);
+  BIO *pri = BIO_new(BIO_s_mem());
+  BIO *pub = BIO_new(BIO_s_mem());
+
+  PEM_write_bio_RSAPrivateKey(pri, r, NULL, NULL, 0, NULL, NULL);
+  PEM_write_bio_RSAPublicKey(pub, r);
+
+  size_t pri_len = BIO_pending(pri);
+  size_t pub_len = BIO_pending(pub);
+
+  char *pri_key = malloc(pri_len + 1);
+  char *pub_key = malloc(pub_len + 1);
+
+  BIO_read(pri, pri_key, pri_len);
+  BIO_read(pub, pub_key, pub_len);
+  printf("loaded key via bio\n");
+
+  pri_key[pri_len] = '\0';
+  pub_key[pub_len] = '\0';
+
+  printf("Key Length: %d\nKey: %s\n", pub_len, pub_key);
+
+  if (RSA_check_key(r)) {
+    printf("RSA key is valid\n");
+  } else {
+    printf("RSA key failed check\n");
+    return 1;
+  }
+
+  if (send(sockfd, pub_key, pub_len, 0) == -1)
+    perror("send");
+
+  printf("server: sent public key");
+
+  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+
+  char client_public [numbytes];
+  RSA_public_decrypt(RSA_size(r), buf, client_public, r, RSA_PKCS1_PADDING);
+
+  printf("server: received '%s'\n", client_public);
+
+  if (send(sockfd, "111", 3, 0) == -1)
+    perror("send");
+
+  BIO_free_all(pri);
+  BIO_free_all(pub);
+  RSA_free(r);
+  return 0;
+}
+
 int selector(char value, int sockfd, char* buf, int numbytes)
 {
   switch(value) {
@@ -160,7 +163,6 @@ int selector(char value, int sockfd, char* buf, int numbytes)
 
 int main(void)
 {
-  generate_key_pair();
   int sockfd, new_fd, numbytes;  // listen on sock_fd, new connection on new_fd
   char buf[MAXDATASIZE];
   struct addrinfo hints, *servinfo, *p;
@@ -242,7 +244,7 @@ int main(void)
     if (!fork()) { // this is the child process
       close(sockfd); // child doesn't need the listener
 
-      if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
+      if ((numbytes = recv(new_fd, buf, 1, 0)) == -1) {
         perror("recv");
         exit(1);
       }
