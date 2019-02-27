@@ -29,8 +29,6 @@
 #define BACKLOG 10     // how many pending connections queue will hold
 #define MAXDATASIZE 100
 
-RSA *r = NULL;
-
 void sigchld_handler(int s)
 {
   // waitpid() might overwrite errno, so we save and restore it:
