@@ -85,57 +85,49 @@ free_all:
 
 int createAccount(int sockfd, char* buf, int numbytes)
 {
-  generate_key_pair();
-  BIO *pri = BIO_new(BIO_s_mem());
-  BIO *pub = BIO_new(BIO_s_mem());
-
-  PEM_write_bio_RSAPrivateKey(pri, r, NULL, NULL, 0, NULL, NULL);
-  PEM_write_bio_RSAPublicKey(pub, r);
-
-  size_t pri_len = BIO_pending(pri);
-  size_t pub_len = BIO_pending(pub);
-
-  char *pri_key = malloc(pri_len + 1);
-  char *pub_key = malloc(pub_len + 1);
-
-  BIO_read(pri, pri_key, pri_len);
-  BIO_read(pub, pub_key, pub_len);
-  printf("loaded key via bio\n");
-
-  pri_key[pri_len] = '\0';
-  pub_key[pub_len] = '\0';
-
-  printf("Key Length: %d\nKey: %s\n", pub_len, pub_key);
-
-  if (RSA_check_key(r)) {
-    printf("RSA key is valid\n");
-  } else {
-    printf("RSA key failed check\n");
-    return 1;
-  }
-
-  if (send(sockfd, pub_key, pub_len, 0) == -1)
+  char *pub_key = "public key\0";
+  if (send(sockfd, pub_key, 12, 0) == -1)
     perror("send");
 
-  printf("server: sent public key");
+  printf("server: sent public key\n");
 
+  // client public key
   if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
 
-  //char client_public [numbytes];
-  //RSA_public_decrypt(RSA_size(r), buf, client_public, r, RSA_PKCS1_PADDING);
+  printf("server: received key '%s'\n", buf);
 
-  //printf("server: received '%s'\n", client_public);
-  printf("server: received '%s'\n", buf);
+  // username
+  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
 
-  if (send(sockfd, "111", 3, 0) == -1)
+  printf("server: received username '%s'\n", buf);
+
+  // display name
+  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+
+  printf("server: received display name '%s'\n", buf);
+
+  // email
+  if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+
+  printf("server: received email '%s'\n", buf);
+
+  if (send(sockfd, "111\0", 4, 0) == -1)
     perror("send");
 
-  BIO_free_all(pri);
-  BIO_free_all(pub);
-  RSA_free(r);
+  printf("server: sent ID\n");
+
   return 0;
 }
 
