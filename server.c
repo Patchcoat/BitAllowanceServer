@@ -124,10 +124,11 @@ int createAccount(int sockfd, char* buf, int numbytes)
     exit(1);
   }
 
-  char client_public [numbytes];
-  RSA_public_decrypt(RSA_size(r), buf, client_public, r, RSA_PKCS1_PADDING);
+  //char client_public [numbytes];
+  //RSA_public_decrypt(RSA_size(r), buf, client_public, r, RSA_PKCS1_PADDING);
 
-  printf("server: received '%s'\n", client_public);
+  //printf("server: received '%s'\n", client_public);
+  printf("server: received '%s'\n", buf);
 
   if (send(sockfd, "111", 3, 0) == -1)
     perror("send");
