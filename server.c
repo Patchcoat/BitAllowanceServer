@@ -86,7 +86,7 @@ free_all:
 int createAccount(int sockfd, char* buf, int numbytes)
 {
   RSA *r = NULL;
-  generateKeyPair(r);
+  generate_key_pair(r);
   BIO *pri = BIO_new(BIO_s_mem());
   BIO *pub = BIO_new(BIO_s_mem());
 
