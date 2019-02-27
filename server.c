@@ -29,6 +29,8 @@
 #define BACKLOG 10     // how many pending connections queue will hold
 #define MAXDATASIZE 100
 
+RSA *r = NULL;
+
 void sigchld_handler(int s)
 {
   // waitpid() might overwrite errno, so we save and restore it:
@@ -49,7 +51,7 @@ void *get_in_addr(struct sockaddr *sa)
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int generate_key_pair(RSA *r)
+int generate_key_pair()
 {
   // return variable used for checking success
 	int	ret = 0;
@@ -83,8 +85,7 @@ free_all:
 
 int createAccount(int sockfd, char* buf, int numbytes)
 {
-  RSA *r = NULL;
-  generate_key_pair(r);
+  generate_key_pair();
   BIO *pri = BIO_new(BIO_s_mem());
   BIO *pub = BIO_new(BIO_s_mem());
 
