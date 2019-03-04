@@ -20,6 +20,8 @@
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 
+#include <mysql.h>
+
 // the configured options and settings for the server
 #define Server_VERSION_MAJOR @Server_VERSION_MAJOR@
 #define Server_VERSION_MINOR @Server_VERSION_MINOR@
@@ -30,6 +32,7 @@
 #define MAXDATASIZE 100
 
 RSA *r = NULL;
+MYSQL *con;
 
 void sigchld_handler(int s)
 {
@@ -164,6 +167,37 @@ int main(void)
   int yes=1;
   char s[INET6_ADDRSTRLEN];
   int rv;
+
+  con = mysql_init(NULL);
+
+  if (con == NULL)
+  {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  if (mysql_real_connect(con, "localhost", "root", "root_pswd",
+                         "BitAllowance", 0, NULL, 0) == NULL)
+  {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    mysql_close(con);
+    exit(1);
+  }
+
+  if (mysql_query(con, "show tables")) {
+    fprintf(sterr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  res = mysql_use_result(con);
+  printf("MYSQL database:\n");
+  while ((row = mysql_fetch_row(res)) != NULL)
+    printf("%s \n", row[0]);
+
+  mysql_free_result(res);
+  mysql_close(conn);
 
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC;
