@@ -128,7 +128,7 @@ int createAccount(int sockfd, char* buf, int numbytes)
 
   printf("server: received email '%s'\n", email);
 
-  if (send(sockfd, "1111111211", 10, 0) == -1)
+  if (send(sockfd, "1111111211\0", 11, 0) == -1)
     perror("send");
 
   printf("server: sent ID\n");
