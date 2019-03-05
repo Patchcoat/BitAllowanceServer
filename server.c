@@ -94,13 +94,13 @@ int createAccount(int sockfd, char* buf, int numbytes)
 
   printf("server: sent public key\n");
 
-  char key[500];
+  char key[545];
   char username[MAXDATASIZE];
   char display[MAXDATASIZE];
   char email[MAXDATASIZE];
 
   // client public key
-  if ((numbytes = recv(sockfd, key, 499, 0)) == -1) {
+  if ((numbytes = recv(sockfd, key, 544, 0)) == -1) {
     perror("recv");
     exit(1);
   }
