@@ -20,7 +20,7 @@
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 
-#include <mysql.h>
+//#include <mysql.h>
 
 // the configured options and settings for the server
 #define Server_VERSION_MAJOR @Server_VERSION_MAJOR@
@@ -32,7 +32,7 @@
 #define MAXDATASIZE 100
 
 RSA *r = NULL;
-MYSQL *con;
+//MYSQL *con;
 
 void sigchld_handler(int s)
 {
@@ -168,7 +168,7 @@ int main(void)
   char s[INET6_ADDRSTRLEN];
   int rv;
 
-  con = mysql_init(NULL);
+  /*con = mysql_init(NULL);
 
   if (con == NULL)
   {
@@ -197,7 +197,7 @@ int main(void)
     printf("%s \n", row[0]);
 
   mysql_free_result(res);
-  mysql_close(conn);
+  mysql_close(conn);*/
 
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC;
