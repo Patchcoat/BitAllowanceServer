@@ -87,7 +87,7 @@ free_all:
 }
 
 void writeAccount(char *key, char *username, char *display, char * email) {
-  char *filename = "./data/UserAccount.txt";
+  char *filename = "UserAccount.txt";
   char *mode = "w+";
   FILE *fp;
   fp = fopen(filename, mode);
