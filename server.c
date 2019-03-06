@@ -86,7 +86,18 @@ free_all:
 	return (ret == 1);
 }
 
-int createAccount(int sockfd, char* buf, int numbytes)
+void writeAccount(char *key, char *username, char *display, char * email) {
+  char *filename = "data/UserAccount.txt";
+  char *mode = "w";
+  FILE *fp;
+  fp = fopen(filename, mode);
+  fputs(key, fp);
+  fputs(username, fp);
+  fputs(display, fp);
+  fputs(email, fp);
+}
+
+int createAccount(int sockfd, int numbytes)
 {
   char *pub_key = "public key\0";
   if (send(sockfd, pub_key, 12, 0) == -1)
@@ -94,8 +105,8 @@ int createAccount(int sockfd, char* buf, int numbytes)
 
   printf("server: sent public key\n");
 
-  char key[545];
   char *ptr;
+  char key[545];
   char username[MAXDATASIZE];
   char display[MAXDATASIZE];
   char email[MAXDATASIZE];
@@ -149,7 +160,7 @@ int createAccount(int sockfd, char* buf, int numbytes)
 
   printf("server: received email '%s'\n", email);
 
-  if (send(sockfd, "1111111211\0", 11, 0) == -1)
+  if (send(sockfd, "1111111\0", 11, 0) == -1)
     perror("send");
 
   printf("server: sent ID\n");
@@ -157,12 +168,12 @@ int createAccount(int sockfd, char* buf, int numbytes)
   return 0;
 }
 
-int selector(char value, int sockfd, char* buf, int numbytes)
+int selector(char value, int sockfd, int numbytes)
 {
   switch(value) {
   case 'c':
     printf("Creating account\n");
-    createAccount(sockfd, buf, numbytes);
+    createAccount(sockfd, numbytes);
     break;
   case 'r':
     break;
@@ -295,7 +306,7 @@ int main(void)
 
       printf("server: received 1 '%s'\n", buf);
 
-      selector(buf[0], new_fd, buf, numbytes);
+      selector(buf[0], new_fd, numbytes);
 
       close(new_fd);
       exit(0);
