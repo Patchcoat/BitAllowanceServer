@@ -160,6 +160,8 @@ int createAccount(int sockfd, int numbytes)
 
   printf("server: received email '%s'\n", email);
 
+  writeAccount(key, username, display, email);
+
   if (send(sockfd, "1111111\0", 11, 0) == -1)
     perror("send");
 
