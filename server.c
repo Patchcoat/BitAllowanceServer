@@ -88,11 +88,14 @@ free_all:
 
 void writeAccount(char *key, char *username, char *display, char * email) {
   FILE *fp;
-  fp = fopen("UserAccount.txt", "w+");
+  fp = fopen("data/UserAccount.txt", "w+");
   fputs(key, fp);
   fputs(username, fp);
+  fputs("\n", fp);
   fputs(display, fp);
+  fputs("\n", fp);
   fputs(email, fp);
+  fputs("\n", fp);
   fclose(fp);
   printf("server: wrote to file\n");
 }
