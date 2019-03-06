@@ -95,6 +95,7 @@ void writeAccount(char *key, char *username, char *display, char * email) {
   fputs(username, fp);
   fputs(display, fp);
   fputs(email, fp);
+  fclose(fp);
 }
 
 int createAccount(int sockfd, int numbytes)
