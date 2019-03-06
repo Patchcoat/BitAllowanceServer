@@ -87,15 +87,14 @@ free_all:
 }
 
 void writeAccount(char *key, char *username, char *display, char * email) {
-  char *filename = "UserAccount.txt";
-  char *mode = "w+";
   FILE *fp;
-  fp = fopen(filename, mode);
+  fp = fopen("UserAccount.txt", "w+");
   fputs(key, fp);
   fputs(username, fp);
   fputs(display, fp);
   fputs(email, fp);
   fclose(fp);
+  printf("server: wrote to file\n");
 }
 
 int createAccount(int sockfd, int numbytes)
