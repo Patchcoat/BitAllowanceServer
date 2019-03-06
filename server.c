@@ -104,6 +104,8 @@ int createAccount(int sockfd, char* buf, int numbytes)
     perror("recv");
     exit(1);
   }
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
 
   printf("server: received key '%s'\n", key);
 
@@ -112,6 +114,8 @@ int createAccount(int sockfd, char* buf, int numbytes)
     perror("recv");
     exit(1);
   }
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
 
   printf("server: received username '%s'\n", username);
 
@@ -120,6 +124,8 @@ int createAccount(int sockfd, char* buf, int numbytes)
     perror("recv");
     exit(1);
   }
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
 
   printf("server: received display name '%s'\n", display);
 
@@ -128,6 +134,8 @@ int createAccount(int sockfd, char* buf, int numbytes)
     perror("recv");
     exit(1);
   }
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
 
   printf("server: received email '%s'\n", email);
 
