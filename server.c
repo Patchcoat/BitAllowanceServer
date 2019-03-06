@@ -134,7 +134,7 @@ int createAccount(int sockfd, int numbytes)
     *ptr = '\0';
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
-  
+
   printf("server: received username '%s'\n", username);
 
   // display name
@@ -165,7 +165,9 @@ int createAccount(int sockfd, int numbytes)
 
   writeAccount(key, username, display, email);
 
-  if (send(sockfd, "1111111\0", 11, 0) == -1)
+  uint32_t id = 1;
+  uint32_t networkOrderID = htonl(id);
+  if (send(sockfd, &networkOrderID, sizeof(uint32_t), 0) == -1)
     perror("send");
 
   printf("server: sent ID\n");
