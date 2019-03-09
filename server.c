@@ -206,6 +206,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
       printf("Key3\n");
       username = malloc(len);
       strcpy(username, line);
+      printf("Username: %s\n", username);
       getKey++;
     }
     else if (getKey == 4) {
@@ -221,7 +222,6 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   }
 
   char *privKey = malloc(strlen(privKey1) + strlen(privKey2) + 2);
-  printf("allocate private key memory");
   strcpy(privKey, privKey1);
   strcat(privKey, "\n");
   strcat(privKey, privKey2);
