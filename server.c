@@ -251,18 +251,18 @@ int logIn(int sockfd, int numbytes)
     perror("recv");
     exit(1);
   }
-  printf("server: received id '%d'\n", id);
+  printf("server: received key '%s'\n", key);
   int *usernameLen;
   int result = verifyKey(id, key, username, usernameLen);
 
   if (result == 1) {
+    printf("server: error with result");
     return 1;
   }
 
   if (send(sockfd, username, *usernameLen, 0) == -1)
     perror("send");
-
-  printf("server: received key '%s'\n", key);
+  printf("server: sent username '%s'\n", username);
   return 0;
 }
 
