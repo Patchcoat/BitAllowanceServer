@@ -206,7 +206,6 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
       printf("Key3\n");
       username = malloc(len);
       strcpy(username, line);
-      printf("Username: %s\n", username);
       getKey++;
     }
     else if (getKey == 4) {
@@ -265,7 +264,7 @@ int logIn(int sockfd, int numbytes)
   printf("server: received key '%s'\n", key);
   int *usernameLen;
   int result = verifyKey(id, key, username, usernameLen);
-
+  printf("server: read from file :%s\n", username);
   if (result == 1) {
     printf("server: error with result\n");
     return 1;
