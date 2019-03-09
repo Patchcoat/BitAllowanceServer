@@ -198,8 +198,11 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   printf("found the right line\n");
   char *privKey1;
   char *privKey2;
+  printf("created variables");
   read = getline(&privKey1, &len, fp);
+  printf("first line");
   read = getline(&privKey2, &len, fp);
+  printf("second line");
   char *privKey = malloc(strlen(privKey1) + strlen(privKey2) + 2);
   printf("allocate private key memory");
   strcpy(privKey, privKey1);
