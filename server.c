@@ -246,7 +246,7 @@ int logIn(int sockfd, int numbytes)
 
   uint32_t id;
   char key[544];
-  char username[100];
+  char *username;
 
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
