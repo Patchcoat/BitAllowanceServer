@@ -195,7 +195,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   }
   if (read == -1)
     return 1;
-
+  printf("found the right line\n");
   char *privKey1;
   char *privKey2;
   read = getline(&privKey1, &len, fp);
@@ -243,6 +243,7 @@ int logIn(int sockfd, int numbytes)
     perror("recv");
     exit(1);
   }
+  printf("server: received id '%d'\n", id);
   int *usernameLen;
   int result = verifyKey(id, key, username, usernameLen);
 
