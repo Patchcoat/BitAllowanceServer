@@ -86,9 +86,11 @@ free_all:
 	return (ret == 1);
 }
 
-void writeAccount(char *key, char *username, char *display, char * email) {
+void writeAccount(uint32_t id, char *key, char *username, char *display, char * email) {
   FILE *fp;
   fp = fopen("data/UserAccount.txt", "w+");
+  fputc(id, fp);
+  fputs("\n", fp);
   fputs(key, fp);
   fputs(username, fp);
   fputs("\n", fp);
@@ -163,7 +165,7 @@ int createAccount(int sockfd, int numbytes)
 
   printf("server: received email '%s'\n", email);
 
-  writeAccount(key, username, display, email);
+  writeAccount(1, key, username, display, email);
 
   uint32_t id = 1;
   uint32_t networkOrderID = htonl(id);
@@ -172,6 +174,84 @@ int createAccount(int sockfd, int numbytes)
 
   printf("server: sent ID\n");
 
+  return 0;
+}
+
+int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
+{
+  FILE *fp;
+  char *ptr;
+  char *line;
+  size_t len = 0;
+  ssize_t read;
+  fp = fopen("data/UserAccount.txt", "r+");
+  if (fp == NULL)
+    return 0;
+  while ((read = getline(&line, &len, fp)) != -1) {
+    printf("%s", line);
+    if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
+      break;
+  }
+  if (read == -1)
+    return 1;
+
+  char *privKey1;
+  char *privKey2;
+  read = getline(&privKey1, &len, fp);
+  read = getline(&privKey2, &len, fp);
+  char *privKey = malloc(strlen(privKey1) + strlen(privKey2) + 2);
+  strcpy(privKey, privKey1);
+  strcat(privKey, "\n");
+  strcat(privKey, privKey2);
+  printf("server: Key %s\n", privKey);
+
+  if (!strcmp(privKey, key)) {
+    return 1;
+  }
+
+  read = getline(&username, &len, fp);
+  *usernameLen = read;
+
+  fclose(fp);
+  if (line)
+    free(line);
+  printf("server: read from file\n");
+  return 0;
+}
+
+int logIn(int sockfd, int numbytes)
+{
+  char *pub_key = "public key\0";
+  if (send(sockfd, pub_key, 12, 0) == -1)
+    perror("send");
+
+  uint32_t id;
+  char key[544];
+  char *username;
+
+  if ((numbytes = recv(sockfd, &id, 4, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+
+  // client public key
+  if ((numbytes = recv(sockfd, key, 544, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  int *usernameLen;
+  int result = verifyKey(id, key, username, usernameLen);
+
+  if (result == 1) {
+    return 1;
+  }
+
+  if (send(sockfd, username, *usernameLen, 0) == -1)
+    perror("send");
+
+  printf("server: received key '%s'\n", key);
   return 0;
 }
 
@@ -187,6 +267,10 @@ int selector(char value, int sockfd, int numbytes)
   case 'v':
     break;
   case 'n':
+    break;
+  case 'l':
+    printf("Logging in\n");
+    logIn(sockfd, numbytes);
     break;
   }
   return 0;
