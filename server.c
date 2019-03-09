@@ -199,6 +199,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   char *privKey1;
   char *privKey2;
   printf("created variables");
+  return 0;
   read = getline(&privKey1, &len, fp);
   printf("first line");
   read = getline(&privKey2, &len, fp);
