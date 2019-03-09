@@ -177,7 +177,7 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
-int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
+int verifyKey(uint32_t id, char *key, char **username, int *usernameLen)
 {
   FILE *fp;
   char *ptr;
@@ -205,7 +205,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
     else if (getKey == 3) {
       printf("Key3\n");
       username = malloc(len);
-      strcpy(username, line);
+      strcpy(*username, line);
       getKey++;
     }
     else if (getKey == 4) {
@@ -246,7 +246,7 @@ int logIn(int sockfd, int numbytes)
 
   uint32_t id;
   char key[544];
-  char *username;
+  char username[100];
 
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
@@ -263,7 +263,7 @@ int logIn(int sockfd, int numbytes)
   }
   printf("server: received key '%s'\n", key);
   int *usernameLen;
-  int result = verifyKey(id, key, username, usernameLen);
+  int result = verifyKey(id, key, &username, usernameLen);
   printf("server: read from file :%s\n", username);
   if (result == 1) {
     printf("server: error with result\n");
