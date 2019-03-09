@@ -187,23 +187,28 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   fp = fopen("data/UserAccount.txt", "r+");
   if (fp == NULL)
     return 0;
+  int getKey = 0;
+  char privKey1[100];
+  char privKey2[100];
   while ((read = getline(&line, &len, fp)) != -1) {
     printf("%u|", strtoul(line, &ptr, 10));
     printf("%u\n", id);
-    if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
+    if (getKey++ == 1) {
+      strcpy(privKey1, line);
+    } else if (getKey++ == 2) {
+      strcpy(privKey2, line);
+    } else if (getKey++ == 3) {
+      username = malloc(len);
+      strcpy(username, line);
+    } else if (getKey == 4) {
       break;
+    }
+    if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
+      getKey = 1;
   }
   if (read == -1)
     return 1;
-  printf("found the right line\n");
-  char *privKey1;
-  char *privKey2;
-  printf("created variables");
-  return 0;
-  read = getline(&privKey1, &len, fp);
-  printf("first line");
-  read = getline(&privKey2, &len, fp);
-  printf("second line");
+
   char *privKey = malloc(strlen(privKey1) + strlen(privKey2) + 2);
   printf("allocate private key memory");
   strcpy(privKey, privKey1);
@@ -212,11 +217,9 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   printf("server: Key %s\n", privKey);
 
   if (!strcmp(privKey, key)) {
+    printf("server: keys don't match");
     return 1;
   }
-
-  read = getline(&username, &len, fp);
-  *usernameLen = read;
 
   fclose(fp);
   if (line)
