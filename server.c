@@ -237,6 +237,14 @@ int logIn(int sockfd, int numbytes)
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   printf("server: received id '%d'\n", id);
+  unsigned int i = 0, size = sizeof(uint32_t);
+  unsigned int maxPow = 1 << (size*8-1);
+  uint32_t num = id;
+  for(;i<size*8;++i){
+    // print last bit and shift left.
+    printf("%u ",!!(num&maxPow));
+    num = num<<1;
+  }
 
   // client public key
   if ((numbytes = recv(sockfd, key, 544, 0)) == -1) {
