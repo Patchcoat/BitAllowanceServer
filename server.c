@@ -191,26 +191,21 @@ int verifyKey(uint32_t id, char *key, char **username, int *usernameLen)
   char privKey1[100];
   char privKey2[544];
   while ((read = getline(&line, &len, fp)) != -1) {
-    printf("Key: %d\nLine: %s", getKey, line);
     if (getKey == 1) {
-      printf("Key1\n");
       strcpy(privKey1, line);
       getKey++;
     }
     else if (getKey == 2) {
-      printf("Key2\n");
       strcpy(privKey2, line);
       getKey++;
     }
     else if (getKey == 3) {
-      printf("Key3\n");
       *username = malloc(len);
       *usernameLen = len;
       strcpy(*username, line);
       getKey++;
     }
     else if (getKey == 4) {
-      printf("Key4\n");
       break;
     }
     if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
@@ -235,7 +230,6 @@ int verifyKey(uint32_t id, char *key, char **username, int *usernameLen)
   fclose(fp);
   if (line)
     free(line);
-  printf("server: read from file\n");
   return 0;
 }
 
@@ -265,7 +259,7 @@ int logIn(int sockfd, int numbytes)
   printf("server: received key '%s'\n", key);
   int usernameLen;
   int result = verifyKey(id, key, &username, &usernameLen);
-  printf("server: read from file :%s\n", username);
+
   if (result == 1) {
     printf("server: error with result\n");
     return 1;
