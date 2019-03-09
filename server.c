@@ -197,18 +197,18 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
       strcpy(privKey1, line);
       getKey++;
     }
-    if (getKey == 2) {
+    else if (getKey == 2) {
       printf("Key2\n");
       strcpy(privKey2, line);
       getKey++;
     }
-    if (getKey == 3) {
+    else if (getKey == 3) {
       printf("Key3\n");
       username = malloc(len);
       strcpy(username, line);
       getKey++;
     }
-    if (getKey == 4) {
+    else if (getKey == 4) {
       printf("Key4\n");
       break;
     }
