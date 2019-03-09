@@ -260,9 +260,18 @@ int logIn(int sockfd, int numbytes)
   int usernameLen;
   int result = verifyKey(id, key, &username, &usernameLen);
 
-  if (result == 1) {
+  if (result != 0) {
     printf("server: error with result\n");
+    if (send(sockfd, "n", 1, 0) == -1)
+      perror("send");
     return 1;
+  }
+  if (send(sockfd, "y", 1, 0) == -1)
+    perror("send");
+  char buffer[3];
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
   }
 
   if (send(sockfd, username, usernameLen, 0) == -1)
