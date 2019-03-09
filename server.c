@@ -86,7 +86,8 @@ free_all:
 	return (ret == 1);
 }
 
-void writeAccount(uint32_t id, char *key, char *username, char *display, char * email) {
+void writeAccount(uint32_t id, char *key, char *username, char *display, char * email)
+{
   FILE *fp;
   fp = fopen("data/UserAccount.txt", "w+");
   fprintf(fp, "%d\n", id);
@@ -188,6 +189,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
     return 0;
   while ((read = getline(&line, &len, fp)) != -1) {
     printf("%s", line);
+    printf("%d", id);
     if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
       break;
   }
