@@ -204,7 +204,7 @@ int verifyKey(uint32_t id, char *key, char **username, int *usernameLen)
     }
     else if (getKey == 3) {
       printf("Key3\n");
-      username = malloc(len);
+      *username = malloc(len);
       strcpy(*username, line);
       getKey++;
     }
