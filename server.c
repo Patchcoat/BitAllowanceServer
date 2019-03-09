@@ -188,8 +188,8 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   if (fp == NULL)
     return 0;
   while ((read = getline(&line, &len, fp)) != -1) {
-    printf("%u", strtoul(line, &ptr, 10));
-    printf("%u", id);
+    printf("%u|", strtoul(line, &ptr, 10));
+    printf("%u\n", id);
     if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
       break;
   }
