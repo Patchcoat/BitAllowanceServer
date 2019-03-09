@@ -89,8 +89,7 @@ free_all:
 void writeAccount(uint32_t id, char *key, char *username, char *display, char * email) {
   FILE *fp;
   fp = fopen("data/UserAccount.txt", "w+");
-  fputc(id, fp);
-  fputs("\n", fp);
+  fprintf(fp, "%d\n", id);
   fputs(key, fp);
   fputs(username, fp);
   fputs("\n", fp);
