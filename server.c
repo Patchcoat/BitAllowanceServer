@@ -189,7 +189,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
     return 0;
   int getKey = 0;
   char privKey1[100];
-  char privKey2[100];
+  char privKey2[544];
   while ((read = getline(&line, &len, fp)) != -1) {
     printf("Key: %d\nLine: %s", getKey, line);
     if (getKey == 1) {
