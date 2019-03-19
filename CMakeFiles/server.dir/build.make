@@ -80,6 +80,7 @@ server_EXTERNAL_OBJECTS =
 server: CMakeFiles/server.dir/server.c.o
 server: CMakeFiles/server.dir/build.make
 server: /usr/lib/x86_64-linux-gnu/libssl.so
+server: /usr/lib/x86_64-linux-gnu/libmysqlclient_r.so
 server: /usr/lib/x86_64-linux-gnu/libcrypto.so
 server: CMakeFiles/server.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/c1user/Programming/CS246/BitAllowanceServer/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C executable server"

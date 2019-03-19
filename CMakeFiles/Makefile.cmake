@@ -13,6 +13,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/feature_tests.c"
   "CMakeFiles/feature_tests.cxx"
   "CMakeLists.txt"
+  "FindMySQL.cmake"
   "server.h.in"
   "/usr/share/cmake-3.11/Modules/CMakeCCompiler.cmake.in"
   "/usr/share/cmake-3.11/Modules/CMakeCCompilerABI.c"

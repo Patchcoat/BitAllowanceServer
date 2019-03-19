@@ -6,5 +6,5 @@ C_FLAGS =
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/c1user/Programming/CS246/BitAllowanceServer 
+C_INCLUDES = -I/home/c1user/Programming/CS246/BitAllowanceServer -I/usr/include/mysql 
 
