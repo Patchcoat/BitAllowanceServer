@@ -203,7 +203,7 @@ int verifyKey(uint32_t id, char *key)
   row = mysql_fetch_row(res);
   lengths = mysql_fetch_lengths(res);
   printf("[%.*s]\n", (int) lengths[1], row[1]);
-
+  pubKey = row[1];
   printf("server: Key %s\n", pubKey);
 
   if (!strcmp(pubKey, key)) {
