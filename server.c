@@ -181,7 +181,7 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
-int verifyKey(uint32_t id, char *key)
+int verifyKey(uint32_t id, char *key, char *username)
 {
   printf("Verify Key\n");
   char *pubKey;
@@ -204,6 +204,7 @@ int verifyKey(uint32_t id, char *key)
   lengths = mysql_fetch_lengths(res);
   printf("[%.*s]\n", (int) lengths[1], row[1]);
   pubKey = row[1];
+  strcpy(username, row[2]);
   printf("server: Key %s\n", pubKey);
 
   if (!strcmp(pubKey, key)) {
@@ -223,7 +224,7 @@ int logIn(int sockfd, int numbytes)
 
   uint32_t id;
   char key[544];
-  char *username;
+  char username[100];
 
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
@@ -240,7 +241,7 @@ int logIn(int sockfd, int numbytes)
   }
   printf("server: received key '%s'\n", key);
   int usernameLen;
-  int result = verifyKey(id, key);
+  int result = verifyKey(id, key, username);
   printf("server: error %d\n", result);
   if (result != 0) {
     printf("server: error with result\n");
