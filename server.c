@@ -183,6 +183,7 @@ int createAccount(int sockfd, int numbytes)
 
 int verifyKey(uint32_t id, char *key)
 {
+  printf("Verify Key\n");
   char *pubKey;
   char *query;
   int size = asprintf(&query, "SELECT * FROM reserve where id='%d';\0", id);
@@ -190,19 +191,18 @@ int verifyKey(uint32_t id, char *key)
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
   }
-
+  printf("Selected Key\n");
   MYSQL_RES *res;
   MYSQL_ROW *row;
   unsigned long *lengths;
   unsigned int num_fields;
   unsigned int i;
   res = mysql_use_result(con);
-
+  printf("Got result\n");
   num_fields = mysql_num_fields(res);
   *row = mysql_fetch_row(res);
   lengths = mysql_fetch_lengths(res);
   printf("[%.*s]\n", (int) lengths[1], *row[1]);
-
 
   printf("server: Key %s\n", pubKey);
 
@@ -241,7 +241,7 @@ int logIn(int sockfd, int numbytes)
   printf("server: received key '%s'\n", key);
   int usernameLen;
   int result = verifyKey(id, key);
-
+  printf("server: error %d\n", result);
   if (result != 0) {
     printf("server: error with result\n");
     if (send(sockfd, "n", 1, 0) == -1)
