@@ -23,9 +23,7 @@
 #include <mysql/mysql.h>
 
 // for using asprintf
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif
+#define _GNU_SOURCE
 
 // the configured options and settings for the server
 #define Server_VERSION_MAJOR @Server_VERSION_MAJOR@
@@ -397,7 +395,6 @@ int main(void)
     }
     close(new_fd);  // parent doesn't need this
   }
-  mysql_free_result(res);
   mysql_close(con);
 
   return 0;
