@@ -86,20 +86,20 @@ free_all:
 	return (ret == 1);
 }
 
-void writeAccount(uint32_t id, char *key, char *username, char *display, char * email)
+void writeAccount(uint32_t *id, char *key, char *username, char *display, char * email)
 {
-  FILE *fp;
-  fp = fopen("data/UserAccount.txt", "w+");
-  fprintf(fp, "%d\n", id);
-  fputs(key, fp);
-  fputs(username, fp);
-  fputs("\n", fp);
-  fputs(display, fp);
-  fputs("\n", fp);
-  fputs(email, fp);
-  fputs("\n", fp);
-  fclose(fp);
-  printf("server: wrote to file\n");
+  char *query;
+  int size = asprintf(&query, "INSERT INTO reserve (public_key, username, display, email) VALUES ('%s','%s','%s','%s');\0",
+           key, username, display, email);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  *id = (uint32_t)mysql_insert_id(con);
+
+  free(query);
+  printf("server: wrote to database\n");
 }
 
 int createAccount(int sockfd, int numbytes)
@@ -165,9 +165,9 @@ int createAccount(int sockfd, int numbytes)
 
   printf("server: received email '%s'\n", email);
 
-  writeAccount(1, key, username, display, email);
+  uint32_t id;
+  writeAccount(&id, key, username, display, email);
 
-  uint32_t id = 1;
   uint32_t networkOrderID = htonl(id);
   if (send(sockfd, &networkOrderID, sizeof(uint32_t), 0) == -1)
     perror("send");
@@ -177,59 +177,44 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
-int verifyKey(uint32_t id, char *key, char **username, int *usernameLen)
+int verifyKey(uint32_t id, char *key)
 {
-  FILE *fp;
-  char *ptr;
-  char *line;
-  size_t len = 0;
-  ssize_t read;
-  fp = fopen("data/UserAccount.txt", "r+");
-  if (fp == NULL)
-    return 0;
-  int getKey = 0;
-  char privKey1[100];
-  char privKey2[544];
-  while ((read = getline(&line, &len, fp)) != -1) {
-    if (getKey == 1) {
-      strcpy(privKey1, line);
-      getKey++;
-    }
-    else if (getKey == 2) {
-      strcpy(privKey2, line);
-      getKey++;
-    }
-    else if (getKey == 3) {
-      *username = malloc(len);
-      *usernameLen = len;
-      strcpy(*username, line);
-      getKey++;
-    }
-    else if (getKey == 4) {
-      break;
-    }
-    if (strtoul(line, &ptr, 10) == id)// break when the ID is found in the file
-      getKey = 1;
-  }
-  if (read == -1) {
-    printf("server: read is -1\n");
-    return 1;
+  char *pubKey;
+  char *query;
+  int size = asprintf(&query, "SELECT * FROM reserve where id='%d';\0", id);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
   }
 
-  char *privKey = malloc(strlen(privKey1) + strlen(privKey2) + 2);
-  strcpy(privKey, privKey1);
-  strcat(privKey, "\n");
-  strcat(privKey, privKey2);
-  printf("server: Key %s\n", privKey);
+  MYSQL_RES *res;
+  MYSQL_ROW *row;
+  unsigned int num_fields;
+  unsigned int i;
+  res = mysql_use_result(con);
 
-  if (!strcmp(privKey, key)) {
+  num_fields = mysql_num_fields(res);
+  while ((row = mysql_fetch_row(res)))
+  {
+    unsigned long *lengths;
+    lengths = mysql_fetch_lengths(res);
+    for(i = 0; i < num_fields; i++)
+    {
+      printf("[%.*s] ", (int) lengths[i],
+             row[i] ? row[i] : "NULL");
+    }
+    printf("\n");
+  }
+
+
+  printf("server: Key %s\n", pubKey);
+
+  if (!strcmp(pubKey, key)) {
     printf("server: keys don't match");
     return 1;
   }
 
-  fclose(fp);
-  if (line)
-    free(line);
+  mysql_free_result(res);
   return 0;
 }
 
@@ -258,7 +243,7 @@ int logIn(int sockfd, int numbytes)
   }
   printf("server: received key '%s'\n", key);
   int usernameLen;
-  int result = verifyKey(id, key, &username, &usernameLen);
+  int result = verifyKey(id, key);
 
   if (result != 0) {
     printf("server: error with result\n");
@@ -328,21 +313,6 @@ int main(void)
     mysql_close(con);
     exit(1);
   }
-
-  if (mysql_query(con, "show tables")) {
-    fprintf(stderr, "%s\n", mysql_error(con));
-    exit(1);
-  }
-
-  MYSQL_RES *res;
-  MYSQL_ROW row;
-  res = mysql_use_result(con);
-  printf("MYSQL database:\n");
-  while ((row = mysql_fetch_row(res)) != NULL)
-    printf("%s \n", row[0]);
-
-  mysql_free_result(res);
-  mysql_close(con);
 
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC;
@@ -429,6 +399,8 @@ int main(void)
     }
     close(new_fd);  // parent doesn't need this
   }
+  mysql_free_result(res);
+  mysql_close(con);
 
   return 0;
 }
