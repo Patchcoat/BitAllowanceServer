@@ -181,7 +181,7 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
-int verifyKey(uint32_t id, char *key, char *username)
+int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
 {
   printf("Verify Key\n");
   char *pubKey;
@@ -205,6 +205,7 @@ int verifyKey(uint32_t id, char *key, char *username)
   printf("[%.*s]\n", (int) lengths[1], row[1]);
   pubKey = row[1];
   strcpy(username, row[2]);
+  *usernameLen = lengths[2];
   printf("server: Key %s\n", pubKey);
 
   if (!strcmp(pubKey, key)) {
@@ -241,7 +242,7 @@ int logIn(int sockfd, int numbytes)
   }
   printf("server: received key '%s'\n", key);
   int usernameLen;
-  int result = verifyKey(id, key, username);
+  int result = verifyKey(id, key, username, &usernameLen);
   printf("server: error %d\n", result);
   if (result != 0) {
     printf("server: error with result\n");
