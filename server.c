@@ -22,6 +22,11 @@
 
 #include <mysql/mysql.h>
 
+// for using asprintf
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 // the configured options and settings for the server
 #define Server_VERSION_MAJOR @Server_VERSION_MAJOR@
 #define Server_VERSION_MINOR @Server_VERSION_MINOR@
@@ -189,22 +194,15 @@ int verifyKey(uint32_t id, char *key)
 
   MYSQL_RES *res;
   MYSQL_ROW *row;
+  unsigned long *lengths;
   unsigned int num_fields;
   unsigned int i;
   res = mysql_use_result(con);
 
   num_fields = mysql_num_fields(res);
-  while ((row = mysql_fetch_row(res)))
-  {
-    unsigned long *lengths;
-    lengths = mysql_fetch_lengths(res);
-    for(i = 0; i < num_fields; i++)
-    {
-      printf("[%.*s] ", (int) lengths[i],
-             row[i] ? row[i] : "NULL");
-    }
-    printf("\n");
-  }
+  *row = mysql_fetch_row(res);
+  lengths = mysql_fetch_lengths(res);
+  printf("[%.*s]\n", (int) lengths[1], *row[1]);
 
 
   printf("server: Key %s\n", pubKey);
