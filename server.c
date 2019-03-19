@@ -3,6 +3,8 @@
 ** server.c -- a stream socket server demo
 */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -23,7 +25,6 @@
 #include <mysql/mysql.h>
 
 // for using asprintf
-#define _GNU_SOURCE
 
 // the configured options and settings for the server
 #define Server_VERSION_MAJOR @Server_VERSION_MAJOR@
