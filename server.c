@@ -181,6 +181,175 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
+void createTransaction(uint32_t *id)
+{
+  char *query;
+  int size = asprintf(&query, "INSERT INTO transaction () VALUES ();\0");
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  *id = (uint32_t)mysql_insert_id(con);
+
+  free(query);
+  printf("server: wrote to database\n");
+}
+
+void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
+{
+  char *query;
+  int size = asprintf(&query, "INSERT INTO transactionGroup (entityID, transactionID) VALUES ('%d', '%d');\0",
+                      entityID,
+                      transactionID);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  free(query);
+  printf("server: wrote to database\n");
+}
+
+int updateTransaction(int sockfd, int numbytes)
+{
+  uint32_t id;
+  char value[100];
+  char operator[1];
+  char timestamp[100];
+  char memo[100];
+  int *linked = 0;
+  int *executed = 0;
+  char expiration[100];
+  uint32_t cooldown;
+  if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (id == 0) {
+    // create the transaction
+    if (send(sockfd, "r", 1, 0) == -1)
+      perror("send");
+
+    if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, value, 100, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, operator, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, memo, 100, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, linked, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, executed, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, &cooldown, sizeof(uint32_t), 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    // TODO create transaction
+    createTransaction(&id);
+    if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
+      perror("send");
+    uint32_t count;
+    if ((numbytes = recv(sockfd, &count, sizeof(uint32_t), 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    // TODO link entity and transaction
+    for (uint32_t i = 0; i < count; i++) {
+      uint32_t entityID;
+      if ((numbytes = recv(sockfd, &entityID, sizeof(uint32_t), 0)) == -1) {
+        perror("recv");
+        exit(1);
+      }
+      if (send(sockfd, "_", 1, 0) == -1)
+        perror("send");
+      linkEntityAndTransaction(id, entityID);
+    }
+    return 0;
+  }
+  // compare timestamps
+  
+}
+
+int updateEntity(int sockfd, int numbytes)
+{
+  uint32_t id;
+  if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (id == 0) {
+    //create the entity
+  }
+}
+
+int normal(int sockfd, int numbytes)
+{
+  char *pub_key = "public key\0";
+  if (send(sockfd, pub_key, 12, 0) == -1)
+    perror("send");
+
+  char type[4];
+  if ((numbytes = recv(sockfd, type, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (type[0] == 'u') {
+    //update
+    if (type[1] == 't') {
+      //transaction
+      if (send(sockfd, "_", 1, 0) == -1)
+        perror("send");
+      updateTransaction(sockfd, numbytes);
+    }
+    else if (type[1] == 'e') {
+      //transaction
+      if (send(sockfd, "_", 1, 0) == -1)
+        perror("send");
+    }
+  }
+}
+
 int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
 {
   printf("Verify Key\n");
@@ -276,6 +445,8 @@ int selector(char value, int sockfd, int numbytes)
   case 'v':
     break;
   case 'n':
+    printf("Normal Communication\n");
+    normal(sockfd, numbytes);
     break;
   case 'l':
     printf("Logging in\n");
