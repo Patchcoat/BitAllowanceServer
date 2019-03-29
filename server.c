@@ -377,10 +377,11 @@ int normal(int sockfd, int numbytes)
     perror("send");
 
   char type[4];
-  if ((numbytes = recv(sockfd, type, sizeof(uint32_t), 0)) == -1) {
+  if ((numbytes = recv(sockfd, type, 4, 0)) == -1) {
     perror("recv");
     exit(1);
   }
+  printf(type);
   if (type[0] == 'u') {
     //update
     if (type[1] == 't') {
