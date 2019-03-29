@@ -181,10 +181,14 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
-void createTransaction(uint32_t *id)
+void createTransaction(uint32_t *id, char *value, char *operator, char *memo, int *linked,
+                       int *executed, char *transactionType, char *name, int *expirable,
+                       char *expirationDate, uint32_t *coolDown, int *repeatable)
 {
   char *query;
-  int size = asprintf(&query, "INSERT INTO transaction () VALUES ();\0");
+  int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);\0",
+                      value, operator, memo, linked, executed, transactionType, name, expirable,
+                      expirationDate, coolDown, repeatable);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
@@ -215,13 +219,17 @@ int updateTransaction(int sockfd, int numbytes)
 {
   uint32_t id;
   char value[100];
-  char operator[1];
+  char operator[2];
+  char type[2];
   char timestamp[100];
   char memo[100];
+  char name[100];
   int *linked = 0;
   int *executed = 0;
+  int *expirable = 0;
   char expiration[100];
   uint32_t cooldown;
+  int *repeatable = 0;
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
     exit(1);
@@ -247,6 +255,20 @@ int updateTransaction(int sockfd, int numbytes)
       perror("recv");
       exit(1);
     }
+    operator[2] = '\0';
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, name, 100, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, type, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    type[2] = '\0';
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) {
@@ -273,6 +295,12 @@ int updateTransaction(int sockfd, int numbytes)
     }
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
+    if ((numbytes = recv(sockfd, expirable, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
     if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) {
       perror("recv");
       exit(1);
@@ -283,8 +311,14 @@ int updateTransaction(int sockfd, int numbytes)
       perror("recv");
       exit(1);
     }
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, repeatable, sizeof(int), 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
     // TODO create transaction
-    createTransaction(&id);
+    createTransaction(&id, value, operator, memo, linked, executed, type, name, expirable, expiration, &cooldown, repeatable);
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
     uint32_t count;
