@@ -186,9 +186,14 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
                        char *expirationDate, uint32_t *coolDown, uint8_t *repeatable)
 {
   char *query;
-  int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);\0",
-                      value, operator, memo, linked, executed, transactionType, name, expirable,
-                      expirationDate, coolDown, repeatable);
+  unsigned int coolDownInt = (unsigned int) coolDown;
+  unsigned int linkedInt = (unsigned int) linked;
+  unsigned int executedInt = (unsigned int) executed;
+  unsigned int expirableInt = (unsigned int) expirable;
+  unsigned int repeatableInt = (unsigned int) repeatable;
+  int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %u, %u, %s, %s, %u, %s, %u, %u);",
+                      value, operator, memo, linkedInt, executedInt, transactionType, name, expirableInt,
+                      expirationDate, coolDownInt, repeatableInt);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
