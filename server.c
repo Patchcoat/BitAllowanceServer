@@ -256,8 +256,16 @@ int updateTransaction(int sockfd, int numbytes)
       perror("recv");
       exit(1);
     }
-    operator[2] = '\0';
+    operator[1] = '\0';
     printf("Operator: %s\n", operator);
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, type, 1, 0)) == -1) { // type
+      perror("recv");
+      exit(1);
+    }
+    type[1] = '\0';
+    printf("Type: %s\n", type);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, name, 100, 0)) == -1) { // name
@@ -265,14 +273,6 @@ int updateTransaction(int sockfd, int numbytes)
       exit(1);
     }
     printf("Name: %s\n", name);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, type, 1, 0)) == -1) { // type
-      perror("recv");
-      exit(1);
-    }
-    type[2] = '\0';
-    printf("Type: %s\n", type);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) { // timestamp
