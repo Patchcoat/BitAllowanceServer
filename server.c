@@ -191,7 +191,7 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
   unsigned int executedInt = (unsigned int) *executed;
   unsigned int expirableInt = (unsigned int) *expirable;
   unsigned int repeatableInt = (unsigned int) *repeatable;
-  int size = asprintf(&query, "INSERT INTO transaction \n(value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) \nVALUES \n(%s, \n%s, \n%s, \n%u, \n%u, \n%s, \n%s, \n%u, \n%s, \n%u, \n%u);",
+  int size = asprintf(&query, "INSERT INTO transactions (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %u, %u, %s, %s, %u, %s, %u, %u);",
                       value, operator, memo, linkedInt, executedInt, transactionType, name, expirableInt,
                       expirationDate, coolDownInt, repeatableInt);
   printf("query: %s\n", query);
