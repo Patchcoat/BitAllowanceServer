@@ -191,7 +191,7 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
   unsigned int executedInt = (unsigned int) *executed;
   unsigned int expirableInt = (unsigned int) *expirable;
   unsigned int repeatableInt = (unsigned int) *repeatable;
-  int size = asprintf(&query, "INSERT INTO transactions (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %u, %u, %s, %s, %u, %s, %u, %u);",
+  int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, '%s', '%s', %u, %u, '%s', '%s', %u, '%s', %u, %u);",
                       value, operator, memo, linkedInt, executedInt, transactionType, name, expirableInt,
                       expirationDate, coolDownInt, repeatableInt);
   printf("query: %s\n", query);
@@ -204,6 +204,37 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
 
   free(query);
   printf("server: wrote to database\n");
+}
+
+void updateTransactionSQL(uint32_t transactionID)
+{
+  char *query;
+  int size = asprintf(&query, "");
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  free(query);
+  printf("server: updated database");
+}
+
+void getTransaction(uint32_t transactionID)
+{
+  char *query;
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE ID IS %u;", transactionID);
+  printf("query: %s\n", query);
+
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+
+
+  free(query);
+  printf("server: received query from database");
 }
 
 void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
