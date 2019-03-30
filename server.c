@@ -181,9 +181,9 @@ int createAccount(int sockfd, int numbytes)
   return 0;
 }
 
-void createTransaction(uint32_t *id, char *value, char *operator, char *memo, int *linked,
-                       int *executed, char *transactionType, char *name, int *expirable,
-                       char *expirationDate, uint32_t *coolDown, int *repeatable)
+void createTransaction(uint32_t *id, char *value, char *operator, char *memo, uint8_t *linked,
+                       uint8_t *executed, char *transactionType, char *name, uint8_t *expirable,
+                       char *expirationDate, uint32_t *coolDown, uint8_t *repeatable)
 {
   char *query;
   int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);\0",
@@ -293,21 +293,21 @@ int updateTransaction(int sockfd, int numbytes)
       perror("recv");
       exit(1);
     }
-    printf("Linked: %d", linked);
+    printf("Linked: %s", linked);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, executed, sizeof(uint8_t), 0)) == -1) { // executed
       perror("recv");
       exit(1);
     }
-    printf("Executed: %d", executed);
+    printf("Executed: %s", executed);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, expirable, 1, 0)) == -1) { // expirable
       perror("recv");
       exit(1);
     }
-    printf("Expirable: %d", expirable);
+    printf("Expirable: %s", expirable);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
@@ -328,7 +328,7 @@ int updateTransaction(int sockfd, int numbytes)
       perror("recv");
       exit(1);
     }
-    printf("Repeatable: %d", repeatable);
+    printf("Repeatable: %s", repeatable);
     createTransaction(&id, value, operator, memo, linked, executed, type, name, expirable, expiration, &cooldown, repeatable);
     printf("Created Transaction");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
