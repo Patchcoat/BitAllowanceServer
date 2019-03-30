@@ -289,15 +289,14 @@ int updateTransaction(int sockfd, int numbytes)
     printf("Memo: %s\n", memo);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    socklen_t bool_size = sizeof(uint8_t);
-    if ((numbytes = recv(sockfd, &linked, &bool_size, 0)) == -1) { // linked
+    if ((numbytes = recv(sockfd, &linked, sizeof(uint8_t), 0)) == -1) { // linked
       perror("recv");
       exit(1);
     }
     printf("Linked: %s", linked);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, &executed, &bool_size, 0)) == -1) { // executed
+    if ((numbytes = recv(sockfd, &executed, sizeof(uint8_t), 0)) == -1) { // executed
       perror("recv");
       exit(1);
     }
@@ -308,7 +307,7 @@ int updateTransaction(int sockfd, int numbytes)
       perror("recv");
       exit(1);
     }
-    printf("Expirable: %d", expirable);
+    printf("Expirable: %s", expirable);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
@@ -325,12 +324,12 @@ int updateTransaction(int sockfd, int numbytes)
     printf("Cooldown: %d", cooldown);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, &repeatable, &bool_size, 0)) == -1) { // repeatable
+    if ((numbytes = recv(sockfd, &repeatable, sizeof(uint8_t), 0)) == -1) { // repeatable
       perror("recv");
       exit(1);
     }
     printf("Repeatable: %s", repeatable);
-    createTransaction(&id, value, operator, memo, linked, executed, type, name, expirable, expiration, &cooldown, repeatable);
+    createTransaction(&id, value, operator, memo, &linked, &executed, type, name, &expirable, expiration, &cooldown, &repeatable);
     printf("Created Transaction");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
