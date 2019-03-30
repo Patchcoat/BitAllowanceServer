@@ -194,6 +194,7 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
   int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, %s, %s, %u, %u, %s, %s, %u, %s, %u, %u);",
                       value, operator, memo, linkedInt, executedInt, transactionType, name, expirableInt,
                       expirationDate, coolDownInt, repeatableInt);
+  printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
