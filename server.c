@@ -224,12 +224,12 @@ int updateTransaction(int sockfd, int numbytes)
   char timestamp[100];
   char memo[100];
   char name[100];
-  uint8_t *linked = 0;
-  uint8_t *executed = 0;
-  uint8_t *expirable = 0;
+  uint8_t linked = 0;
+  uint8_t executed = 0;
+  uint8_t expirable = 0;
   char expiration[100];
   uint32_t cooldown;
-  uint8_t *repeatable = 0;
+  uint8_t repeatable = 0;
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
     exit(1);
@@ -289,25 +289,26 @@ int updateTransaction(int sockfd, int numbytes)
     printf("Memo: %s\n", memo);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, linked, sizeof(uint8_t), 0)) == -1) { // linked
+    socklen_t bool_size = sizeof(uint8_t);
+    if ((numbytes = recv(sockfd, &linked, &bool_size, 0)) == -1) { // linked
       perror("recv");
       exit(1);
     }
     printf("Linked: %s", linked);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, executed, sizeof(uint8_t), 0)) == -1) { // executed
+    if ((numbytes = recv(sockfd, &executed, &bool_size, 0)) == -1) { // executed
       perror("recv");
       exit(1);
     }
     printf("Executed: %s", executed);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, expirable, 1, 0)) == -1) { // expirable
+    if ((numbytes = recv(sockfd, &expirable, 1, 0)) == -1) { // expirable
       perror("recv");
       exit(1);
     }
-    printf("Expirable: %s", expirable);
+    printf("Expirable: %d", expirable);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
     if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
@@ -324,7 +325,7 @@ int updateTransaction(int sockfd, int numbytes)
     printf("Cooldown: %d", cooldown);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, repeatable, sizeof(uint8_t), 0)) == -1) { // repeatable
+    if ((numbytes = recv(sockfd, &repeatable, &bool_size, 0)) == -1) { // repeatable
       perror("recv");
       exit(1);
     }
