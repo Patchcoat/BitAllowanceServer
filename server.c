@@ -224,12 +224,12 @@ int updateTransaction(int sockfd, int numbytes)
   char timestamp[100];
   char memo[100];
   char name[100];
-  uint32_t *linked = 0;
-  uint32_t *executed = 0;
-  uint32_t *expirable = 0;
+  uint8_t *linked = 0;
+  uint8_t *executed = 0;
+  uint8_t *expirable = 0;
   char expiration[100];
   uint32_t cooldown;
-  uint32_t *repeatable = 0;
+  uint8_t *repeatable = 0;
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
     exit(1);
@@ -238,21 +238,21 @@ int updateTransaction(int sockfd, int numbytes)
     // create the transaction
     if (send(sockfd, "r", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+    if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) { // id
       perror("recv");
       exit(1);
     }
     printf("ID: %d\n", id);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, value, 100, 0)) == -1) {
+    if ((numbytes = recv(sockfd, value, 100, 0)) == -1) { // value
       perror("recv");
       exit(1);
     }
     printf("Value: %s\n", value);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, operator, 1, 0)) == -1) {
+    if ((numbytes = recv(sockfd, operator, 1, 0)) == -1) { // operator
       perror("recv");
       exit(1);
     }
@@ -260,14 +260,14 @@ int updateTransaction(int sockfd, int numbytes)
     printf("Operator: %s\n", operator);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, name, 100, 0)) == -1) {
+    if ((numbytes = recv(sockfd, name, 100, 0)) == -1) { // name
       perror("recv");
       exit(1);
     }
     printf("Name: %s\n", name);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, type, 1, 0)) == -1) {
+    if ((numbytes = recv(sockfd, type, 1, 0)) == -1) { // type
       perror("recv");
       exit(1);
     }
@@ -275,56 +275,56 @@ int updateTransaction(int sockfd, int numbytes)
     printf("Type: %s\n", type);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) {
+    if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) { // timestamp
       perror("recv");
       exit(1);
     }
     printf("Timestamp: %s\n", timestamp);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, memo, 100, 0)) == -1) {
+    if ((numbytes = recv(sockfd, memo, 100, 0)) == -1) { // memo
       perror("recv");
       exit(1);
     }
     printf("Memo: %s\n", memo);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, linked, 1, 0)) == -1) {
+    if ((numbytes = recv(sockfd, linked, sizeof(uint8_t), 0)) == -1) { // linked
       perror("recv");
       exit(1);
     }
     printf("Linked: %d", linked);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, executed, 1, 0)) == -1) {
+    if ((numbytes = recv(sockfd, executed, sizeof(uint8_t), 0)) == -1) { // executed
       perror("recv");
       exit(1);
     }
     printf("Executed: %d", executed);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, expirable, 1, 0)) == -1) {
+    if ((numbytes = recv(sockfd, expirable, 1, 0)) == -1) { // expirable
       perror("recv");
       exit(1);
     }
     printf("Expirable: %d", expirable);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) {
+    if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
       perror("recv");
       exit(1);
     }
     printf("Expiration: %s", expiration);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, &cooldown, sizeof(uint32_t), 0)) == -1) {
+    if ((numbytes = recv(sockfd, &cooldown, sizeof(uint32_t), 0)) == -1) { // cooldown
       perror("recv");
       exit(1);
     }
     printf("Cooldown: %d", cooldown);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    if ((numbytes = recv(sockfd, repeatable, sizeof(int), 0)) == -1) {
+    if ((numbytes = recv(sockfd, repeatable, sizeof(uint8_t), 0)) == -1) { // repeatable
       perror("recv");
       exit(1);
     }
