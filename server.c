@@ -670,11 +670,11 @@ void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
   MYSQL_ROW row = getEntity(id);
 
   char buffer[1];
-  char username = row[1];
-  char displayName = row[2];
-  char birthday = row[3];
-  char email = row[4];
-  char value = row[6];
+  char *username = row[1];
+  char *displayName = row[2];
+  char *birthday = row[3];
+  char *email = row[4];
+  char *value = row[6];
 
   if (send(sockfd, "l", 1, 0) == -1) // remote update
     perror("send");
