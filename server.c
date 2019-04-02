@@ -203,13 +203,13 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
   *id = (uint32_t)mysql_insert_id(con);
 
   free(query);
-  printf("server: wrote to database\n");
+  printf("server: wrote transaction to database\n");
 }
 
-void updateTransactionSQL(uint32_t transactionID)
+void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
 {
   char *query;
-  int size = asprintf(&query, "");
+  int size = asprintf(&query, "UPDATE transaction SET %s = %s WHERE id = %d;", name, value, transactionID);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
@@ -220,27 +220,30 @@ void updateTransactionSQL(uint32_t transactionID)
   printf("server: updated database");
 }
 
-void getTransaction(uint32_t transactionID)
+MYSQL_ROW getTransaction(uint32_t transactionID)
 {
   char *query;
   int size = asprintf(&query, "SELECT * FROM transaction WHERE ID IS %u;", transactionID);
   printf("query: %s\n", query);
-
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
   }
 
-
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  res = mysql_use_result(con);
+  row = mysql_fetch_row(res);
 
   free(query);
   printf("server: received query from database");
+  return row;
 }
 
 void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
 {
   char *query;
-  int size = asprintf(&query, "INSERT INTO transactionGroup (entityID, transactionID) VALUES ('%d', '%d');\0",
+  int size = asprintf(&query, "INSERT IGNORE INTO transactionGroup (entityID, transactionID) VALUES (%d, %d);\0",
                       entityID,
                       transactionID);
   if (mysql_query(con, query)) {
@@ -252,13 +255,36 @@ void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
   printf("server: wrote to database\n");
 }
 
-int updateTransaction(int sockfd, int numbytes)
+// returns 1 if the timestamp at the ID is the newest
+// returns -1 if the provided timestamp is the newest
+// returns 0 if the timestamps are the same
+int compareTimestamps(uint32_t id, char *timestamp)
 {
-  uint32_t id;
+  char *query;
+  int size = asprintf(&query, "SELECT id, CONVERT(timestamp, CHAR) FROM transaction WHERE ID IS %u;", id);
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  char *db_timestamp;
+  res = mysql_use_result(con);
+  row = mysql_fetch_row(res);
+  db_timestamp = row[1];
+
+  free(query);
+  printf("server: compared the timestamps");
+  return strcmp(db_timestamp, timestamp);
+}
+
+int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
+{
   char value[100];
   char operator[2];
   char type[2];
-  char timestamp[100];
   char memo[100];
   char name[100];
   uint8_t linked = 0;
@@ -267,144 +293,462 @@ int updateTransaction(int sockfd, int numbytes)
   char expiration[100];
   uint32_t cooldown;
   uint8_t repeatable = 0;
-  if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+  if (send(sockfd, "r", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, value, 100, 0)) == -1) { // value
     perror("recv");
     exit(1);
   }
-  if (id == 0) {
-    // create the transaction
-    if (send(sockfd, "r", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) { // id
-      perror("recv");
-      exit(1);
-    }
-    printf("ID: %d\n", id);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, value, 100, 0)) == -1) { // value
-      perror("recv");
-      exit(1);
-    }
-    printf("Value: %s\n", value);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, operator, 1, 0)) == -1) { // operator
-      perror("recv");
-      exit(1);
-    }
-    operator[1] = '\0';
-    printf("Operator: %s\n", operator);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, type, 1, 0)) == -1) { // type
-      perror("recv");
-      exit(1);
-    }
-    type[1] = '\0';
-    printf("Type: %s\n", type);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, name, 100, 0)) == -1) { // name
-      perror("recv");
-      exit(1);
-    }
-    printf("Name: %s\n", name);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) { // timestamp
-      perror("recv");
-      exit(1);
-    }
-    printf("Timestamp: %s\n", timestamp);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, memo, 100, 0)) == -1) { // memo
-      perror("recv");
-      exit(1);
-    }
-    printf("Memo: %s\n", memo);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, &linked, sizeof(uint8_t), 0)) == -1) { // linked
-      perror("recv");
-      exit(1);
-    }
-    printf("Linked: %d\n", linked);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, &executed, sizeof(uint8_t), 0)) == -1) { // executed
-      perror("recv");
-      exit(1);
-    }
-    printf("Executed: %d\n", executed);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, &expirable, 1, 0)) == -1) { // expirable
-      perror("recv");
-      exit(1);
-    }
-    printf("Expirable: %d\n", expirable);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
-      perror("recv");
-      exit(1);
-    }
-    printf("Expiration: %s\n", expiration);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, &cooldown, sizeof(uint32_t), 0)) == -1) { // cooldown
-      perror("recv");
-      exit(1);
-    }
-    printf("Cooldown: %d\n", cooldown);
-    if (send(sockfd, "_", 1, 0) == -1)
-      perror("send");
-    if ((numbytes = recv(sockfd, &repeatable, sizeof(uint8_t), 0)) == -1) { // repeatable
-      perror("recv");
-      exit(1);
-    }
-    printf("Repeatable: %d\n", repeatable);
+  printf("Value: %s\n", value);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, operator, 1, 0)) == -1) { // operator
+    perror("recv");
+    exit(1);
+  }
+  operator[1] = '\0';
+  printf("Operator: %s\n", operator);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, type, 1, 0)) == -1) { // type
+    perror("recv");
+    exit(1);
+  }
+  type[1] = '\0';
+  printf("Type: %s\n", type);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, name, 100, 0)) == -1) { // name
+    perror("recv");
+    exit(1);
+  }
+  printf("Name: %s\n", name);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, memo, 100, 0)) == -1) { // memo
+    perror("recv");
+    exit(1);
+  }
+  printf("Memo: %s\n", memo);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &linked, sizeof(uint8_t), 0)) == -1) { // linked
+    perror("recv");
+    exit(1);
+  }
+  printf("Linked: %d\n", linked);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &executed, sizeof(uint8_t), 0)) == -1) { // executed
+    perror("recv");
+    exit(1);
+  }
+  printf("Executed: %d\n", executed);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &expirable, 1, 0)) == -1) { // expirable
+    perror("recv");
+    exit(1);
+  }
+  printf("Expirable: %d\n", expirable);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
+    perror("recv");
+    exit(1);
+  }
+  printf("Expiration: %s\n", expiration);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &cooldown, sizeof(uint32_t), 0)) == -1) { // cooldown
+    perror("recv");
+    exit(1);
+  }
+  printf("Cooldown: %d\n", cooldown);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &repeatable, sizeof(uint8_t), 0)) == -1) { // repeatable
+    perror("recv");
+    exit(1);
+  }
+  printf("Repeatable: %d\n", repeatable);
+  if (id == 0)
+  {
     createTransaction(&id, value, operator, memo, &linked, &executed, type, name, &expirable, expiration, &cooldown, &repeatable);
     printf("Created Transaction");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
-    uint32_t count;
-    if ((numbytes = recv(sockfd, &count, sizeof(uint32_t), 0)) == -1) {
+  }
+  else
+  {
+    updateTransactionSQL(id, "value", value);
+    updateTransactionSQL(id, "operator", operator);
+    updateTransactionSQL(id, "memo", memo);
+    updateTransactionSQL(id, "type", type);
+    updateTransactionSQL(id, "name", name);
+    updateTransactionSQL(id, "expiration", expiration);
+    char linkedChar = (linked ? '1' : '0');
+    char executedChar = (executed ? '1' : '0');
+    char expirableChar = (expirable ? '1' : '0');
+    char cooldownChar = (expirable ? '1' : '0');
+    char repeatableChar = (repeatable ? '1' : '0');
+    updateTransactionSQL(id, "linked", &linkedChar);
+    updateTransactionSQL(id, "executed", &executedChar);
+    updateTransactionSQL(id, "expirable", &expirableChar);
+    updateTransactionSQL(id, "coolDown", &cooldownChar);
+    updateTransactionSQL(id, "repeatable", &repeatableChar);
+    printf("updated transaction");
+    if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
+      perror("send");
+  }
+  uint32_t count;
+  if ((numbytes = recv(sockfd, &count, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  printf("Count: %d", count);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  for (uint32_t i = 0; i < count; i++) {
+    uint32_t entityID;
+    if ((numbytes = recv(sockfd, &entityID, sizeof(uint32_t), 0)) == -1) {
       perror("recv");
       exit(1);
     }
-    printf("Count: %d", count);
     if (send(sockfd, "_", 1, 0) == -1)
       perror("send");
-    // TODO link entity and transaction
-    for (uint32_t i = 0; i < count; i++) {
-      uint32_t entityID;
-      if ((numbytes = recv(sockfd, &entityID, sizeof(uint32_t), 0)) == -1) {
-        perror("recv");
-        exit(1);
-      }
-      if (send(sockfd, "_", 1, 0) == -1)
-        perror("send");
-      linkEntityAndTransaction(id, entityID);
-    }
+    linkEntityAndTransaction(id, entityID);
+  }
+  return 0;
+}
+
+int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
+{
+  MYSQL_ROW row = getTransaction(id);
+
+  char buffer[1];
+  char *value = row[1];
+  char *operator = row[2];
+  char *type = row[7];
+  char *memo = row[4];
+  char *name = row[8];
+  uint8_t linked = atoi(row[5]);
+  uint8_t executed = atoi(row[6]);
+  uint8_t expirable = atoi(row[9]);
+  char *expiration = row[10];
+  uint32_t cooldown = atoi(row[11]);
+  uint8_t repeatable = atoi(row[12]);
+
+  if (send(sockfd, "l", 1, 0) == -1) // local update
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, value, 1, 0) == -1) // value
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  printf("Value: %s\n", value);
+  if (send(sockfd, operator, 1, 0) == -1) // operator
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  operator[1] = '\0';
+  printf("Operator: %s\n", operator);
+  if (send(sockfd, type, 1, 0) == -1) // type
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  type[1] = '\0';
+  printf("Type: %s\n", type);
+  if (send(sockfd, name, 1, 0) == -1) // name
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  printf("Name: %s\n", name);
+  if (send(sockfd, memo, 1, 0) == -1) // memo
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  printf("Memo: %s\n", memo);
+  if (send(sockfd, &linked, 1, 0) == -1) // linked
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  printf("Linked: %d\n", linked);
+  if (send(sockfd, &executed, 1, 0) == -1) // executed
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, &expirable, 1, 0) == -1) // expirable
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, expiration, 1, 0) == -1) // expiration
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, &cooldown, 1, 0) == -1) // cooldown
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, &repeatable, 1, 0) == -1) // repeatable
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+
+  return 0;
+}
+
+int updateTransaction(int sockfd, int numbytes)
+{
+  uint32_t id;
+  char timestamp[100];
+  if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  printf("ID: %d\n", id);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) { // timestamp
+    perror("recv");
+    exit(1);
+  }
+  printf("Timestamp: %s\n", timestamp);
+  if (id == 0)
+  {
+    updateTransactionDatabase(sockfd, numbytes, id);
+    printf("created entity in database");
     return 0;
   }
   // compare timestamps
-  
+  // -1 = timestamp from phone is the newest, so use that one
+  //  1 = timestamp from database is the newest, so use that one
+  int compare = compareTimestamps(id, timestamp);
+  if (compare == -1)
+  {
+    updateTransactionDatabase(sockfd, numbytes, id);
+    printf("updated database");
+  }
+  else if (compare == 1)
+  {
+    updateTransactionPhone(sockfd, numbytes, id);
+    printf("updated phone");
+  }
+  return 0;
+}
+
+void createEntity(uint32_t *id, char *username, char *displayName, char *birthday, char *email, char *cashBalance)
+{
+  char *query;
+  int size = asprintf(&query, "INSERT INTO entity (username, displayName, birthday, email, cashBalance) VALUES (%s, %s, %s, %s, %s)", username, displayName, birthday, email, cashBalance);
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  *id = (uint32_t)mysql_insert_id(con);
+
+  free(query);
+  printf("server: wrote entity to database\n");
+}
+
+void updateEntitySQL(uint32_t entityID, char *name, char *value)
+{
+  char *query;
+  int size = asprintf(&query, "UPDATE entity SET %s = %s WHERE id = %d;", name, value, entityID);
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  free(query);
+  printf("server: updated database");
+}
+
+MYSQL_ROW getEntity(uint32_t entityID)
+{
+  char *query;
+  int size = asprintf(&query, "SELECT * FROM entity WHERE ID IS %u;", entityID);
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  res = mysql_use_result(con);
+  row = mysql_fetch_row(res);
+
+  free(query);
+  printf("server: received query from database");
+
+  return row;
+}
+
+void updateEntityDatabase(int sockfd, int numbytes, uint32_t id)
+{
+  char username[100];
+  char displayName[100];
+  char birthday[100];
+  char email[100];
+  char value[100];
+
+  if (send(sockfd, "r", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, value, 100, 0)) == -1) { // value
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, "_", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, username, 100, 0)) == -1) { // username
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, "_", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, displayName, 100, 0)) == -1) { // displayName
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, "_", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, birthday, 100, 0)) == -1) { // birthday
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, "_", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, email, 100, 0)) == -1) { // email
+    perror("recv");
+    exit(1);
+  }
+  if (id == 0) {
+    createEntity(&id, username, displayName, birthday, email, value);
+    printf("Created Transaction");
+    if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
+      perror("send");
+  } else {
+    updateEntitySQL(id, "cashBalance", value);
+    updateEntitySQL(id, "username", username);
+    updateEntitySQL(id, "displayName", displayName);
+    updateEntitySQL(id, "birthday", birthday);
+    updateEntitySQL(id, "email", email);
+  }
+}
+
+void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
+{
+  MYSQL_ROW row = getEntity(id);
+
+  char buffer[1];
+  char username = row[1];
+  char displayName = row[2];
+  char birthday = row[3];
+  char email = row[4];
+  char value = row[6];
+
+  if (send(sockfd, "l", 1, 0) == -1) // remote update
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, value, 100, 0) == -1) // value
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, username, 100, 0) == -1) // username
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, displayName, 100, 0) == -1) // displayName
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, birthday, 100, 0) == -1) // birthday
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, email, 100, 0) == -1) // email
+    perror("send");
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
 }
 
 int updateEntity(int sockfd, int numbytes)
 {
   uint32_t id;
+  char timestamp[100];
   if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  if (id == 0) {
-    //create the entity
+  printf("ID: %d\n", id);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, timestamp, 100, 0)) == -1) { // timestamp
+    perror("recv");
+    exit(1);
   }
+  if (id == 0) {
+    updateEntityDatabase(sockfd, numbytes, id);
+    printf("created entity in database");
+    return 0;
+  }
+  // compare timestamps
+  // -1 = timestamp from phone is the newest, so use that one
+  //  1 = timestamp from database is the newest, so use that one
+  int compare = compareTimestamps(id, timestamp);
+  if (compare == -1)
+  {
+    updateEntityDatabase(sockfd, numbytes, id);
+    printf("updated database");
+  }
+  else if (compare == 1)
+  {
+    updateEntityPhone(sockfd, numbytes, id);
+    printf("updated phone");
+  }
+  return 0;
 }
 
 int normal(int sockfd, int numbytes)
@@ -437,8 +781,10 @@ int normal(int sockfd, int numbytes)
       //transaction
       if (send(sockfd, "_", 1, 0) == -1)
         perror("send");
+      updateEntity(sockfd, numbytes);
     }
   }
+  return 0;
 }
 
 int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
