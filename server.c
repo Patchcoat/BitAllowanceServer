@@ -277,6 +277,7 @@ int compareTimestamps(uint32_t id, char *timestamp)
   row = mysql_fetch_row(res);
   db_timestamp = row[1];
 
+  mysql_free_result(res);
   free(query);
   printf("server: compared the timestamps\n");
   return strcmp(db_timestamp, timestamp);
