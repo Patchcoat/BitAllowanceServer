@@ -223,7 +223,7 @@ void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
 MYSQL_ROW getTransaction(uint32_t transactionID)
 {
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE ID IS %u", transactionID);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE id = %u", transactionID);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;) 
     /* do nothing */;
