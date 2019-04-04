@@ -225,7 +225,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   char *query;
   int size = asprintf(&query, "SELECT * FROM transaction WHERE id = %u", transactionID);
   printf("query: %s\n", query);
-  for(; mysql_next_result(con) == 0;) 
+  for(; mysql_next_result(con) == 0;)
     /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
@@ -431,7 +431,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
   unsigned long *lengths;
   MYSQL_ROW row = getTransaction(id, lengths);
-
+  printf("Transaction");
   char buffer[1];
   char *value = row[1];
   char *operator = row[2];
