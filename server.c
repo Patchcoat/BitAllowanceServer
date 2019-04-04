@@ -451,7 +451,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  printf("%d\n", (int) lengths[1]);
+  printf("Length %d\n", (int) lengths[1]);
   if (send(sockfd, value, (int) lengths[1], 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
