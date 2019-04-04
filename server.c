@@ -276,7 +276,7 @@ int compareTimestamps(uint32_t id, char *timestamp)
   db_timestamp = row[1];
 
   free(query);
-  printf("server: compared the timestamps");
+  printf("server: compared the timestamps\n");
   return strcmp(db_timestamp, timestamp);
 }
 
@@ -551,15 +551,16 @@ int updateTransaction(int sockfd, int numbytes)
   // -1 = timestamp from phone is the newest, so use that one
   //  1 = timestamp from database is the newest, so use that one
   int compare = compareTimestamps(id, timestamp);
+  printf("Timestamp compare: %d\n", compare);
   if (compare == -1)
   {
     updateTransactionDatabase(sockfd, numbytes, id);
-    printf("updated database");
+    printf("updated database\n");
   }
   else if (compare == 1)
   {
     updateTransactionPhone(sockfd, numbytes, id);
-    printf("updated phone");
+    printf("updated phone\n");
   }
   return 0;
 }
@@ -996,7 +997,7 @@ int normal(int sockfd, int numbytes)
     perror("recv");
     exit(1);
   }
-  printf(type);
+  printf("%s\n", type);
   if (type[0] == 'u') {
     //update
     if (type[1] == 't') {
