@@ -220,7 +220,7 @@ void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
   printf("server: updated database");
 }
 
-MYSQL_ROW getTransaction(uint32_t transactionID)
+MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
 {
   char *query;
   int size = asprintf(&query, "SELECT * FROM transaction WHERE id = %u", transactionID);
@@ -236,7 +236,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID)
   MYSQL_ROW row;
   res = mysql_store_result(con);
   row = mysql_fetch_row(res);
-
+  lengths = mysql_fetch_lengths(res);
   free(query);
   printf("server: received query from database\n");
   return row;
@@ -429,7 +429,8 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
-  MYSQL_ROW row = getTransaction(id);
+  unsigned long *lengths;
+  MYSQL_ROW row = getTransaction(id, lengths);
 
   char buffer[1];
   char *value = row[1];
@@ -450,7 +451,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, value, 1, 0) == -1) // value
+  if (send(sockfd, value, lengths[1], 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
@@ -473,14 +474,14 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   }
   type[1] = '\0';
   printf("Type: %s\n", type);
-  if (send(sockfd, name, 1, 0) == -1) // name
+  if (send(sockfd, name, lengths[8], 0) == -1) // name
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   printf("Name: %s\n", name);
-  if (send(sockfd, memo, 1, 0) == -1) // memo
+  if (send(sockfd, memo, lengths[4], 0) == -1) // memo
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
@@ -506,7 +507,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, expiration, 1, 0) == -1) // expiration
+  if (send(sockfd, expiration, lengths[10], 0) == -1) // expiration
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
