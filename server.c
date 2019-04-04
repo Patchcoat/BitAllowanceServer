@@ -552,12 +552,12 @@ int updateTransaction(int sockfd, int numbytes)
   //  1 = timestamp from database is the newest, so use that one
   int compare = compareTimestamps(id, timestamp);
   printf("Timestamp compare: %d\n", compare);
-  if (compare == -1)
+  if (compare < 0)
   {
     updateTransactionDatabase(sockfd, numbytes, id);
     printf("updated database\n");
   }
-  else if (compare == 1)
+  else if (compare > 0)
   {
     updateTransactionPhone(sockfd, numbytes, id);
     printf("updated phone\n");
@@ -741,12 +741,12 @@ int updateEntity(int sockfd, int numbytes)
   // -1 = timestamp from phone is the newest, so use that one
   //  1 = timestamp from database is the newest, so use that one
   int compare = compareTimestamps(id, timestamp);
-  if (compare == -1)
+  if (compare < 0)
   {
     updateEntityDatabase(sockfd, numbytes, id);
     printf("updated database\n");
   }
-  else if (compare == 1)
+  else if (compare > 0)
   {
     updateEntityPhone(sockfd, numbytes, id);
     printf("updated phone\n");
