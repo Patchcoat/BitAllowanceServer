@@ -893,7 +893,90 @@ void getTransactionList(int sockfd,int numbytes)
 
 void getEntityList(int sockfd,int numbytes)
 {
+  uint32_t id;
   uint32_t count;
+  char buffer[1];
+  if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  char *query;
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID IS %u;", id);
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  res = mysql_store_result(con);
+  if (res == NULL)
+    count = 0;
+  else
+    count = mysql_num_rows(res);
+  if (send(sockfd, &count, sizeof(uint32_t), 0) == -1)
+    perror("send");
+  if (count == 0)
+    return;
+
+  while ((row = mysql_fetch_row(res))) {
+    char buffer[1];
+    uint32_t id = atoi(row[0]);
+    char *username = row[1];
+    char *displayName = row[2];
+    char *birthday = row[3];
+    char *email = row[4];
+    char *value = row[6];
+
+    if (send(sockfd, "u", 1, 0) == -1) // remote update
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, &id, 100, 0) == -1) // id
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, value, 100, 0) == -1) // value
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, username, 100, 0) == -1) // username
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, displayName, 100, 0) == -1) // displayName
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, birthday, 100, 0) == -1) // birthday
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, email, 100, 0) == -1) // email
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+  }
+  if (send(sockfd, "s", 1, 0) == -1) // stop the update
+    perror("send");
+
+  mysql_free_result(res);
+  free(query);
+  printf("server: received query from database");
 }
 
 int normal(int sockfd, int numbytes)
