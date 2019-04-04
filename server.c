@@ -451,8 +451,8 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  printf("%lu\n", lengths[1]);
-  if (send(sockfd, value, lengths[1], 0) == -1) // value
+  printf("%d\n", (int) lengths[1]);
+  if (send(sockfd, value, (int) lengths[1], 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
@@ -475,14 +475,14 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   }
   type[1] = '\0';
   printf("Type: %s\n", type);
-  if (send(sockfd, name, lengths[8], 0) == -1) // name
+  if (send(sockfd, name, (int) lengths[8], 0) == -1) // name
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   printf("Name: %s\n", name);
-  if (send(sockfd, memo, lengths[4], 0) == -1) // memo
+  if (send(sockfd, memo, (int) lengths[4], 0) == -1) // memo
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
@@ -508,7 +508,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, expiration, lengths[10], 0) == -1) // expiration
+  if (send(sockfd, expiration, (int) lengths[10], 0) == -1) // expiration
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
