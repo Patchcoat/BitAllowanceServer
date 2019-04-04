@@ -261,7 +261,7 @@ void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
 int compareTimestamps(uint32_t id, char *timestamp)
 {
   char *query;
-  int size = asprintf(&query, "SELECT CAST(transaction.timestamp AS CHAR(19)) as TextColumn FROM transaction WHERE ID IS %u;", id);
+  int size = asprintf(&query, "SELECT CAST(transaction.timestamp AS CHAR(19)) as TextColumn FROM transaction WHERE ID IS '%u';", id);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
