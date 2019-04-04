@@ -655,7 +655,7 @@ void updateEntityDatabase(int sockfd, int numbytes, uint32_t id)
   }
   if (id == 0) {
     createEntity(&id, username, displayName, birthday, email, value);
-    printf("Created Transaction");
+    printf("Created Transaction\n");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
   } else {
@@ -733,7 +733,7 @@ int updateEntity(int sockfd, int numbytes)
   }
   if (id == 0) {
     updateEntityDatabase(sockfd, numbytes, id);
-    printf("created entity in database");
+    printf("created entity in database\n");
     return 0;
   }
   // compare timestamps
@@ -743,12 +743,12 @@ int updateEntity(int sockfd, int numbytes)
   if (compare == -1)
   {
     updateEntityDatabase(sockfd, numbytes, id);
-    printf("updated database");
+    printf("updated database\n");
   }
   else if (compare == 1)
   {
     updateEntityPhone(sockfd, numbytes, id);
-    printf("updated phone");
+    printf("updated phone\n");
   }
   return 0;
 }
