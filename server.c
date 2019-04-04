@@ -255,13 +255,13 @@ void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
   printf("server: wrote to database\n");
 }
 
-// returns 1 if the timestamp at the ID is the newest
-// returns -1 if the provided timestamp is the newest
+// returns 1 if the timestamp in the database is the newest
+// returns -1 if the provided by the phone is the newest
 // returns 0 if the timestamps are the same
 int compareTimestamps(uint32_t id, char *timestamp)
 {
   char *query;
-  int size = asprintf(&query, "SELECT timestamp FROM transaction WHERE ID IS %u;", id);
+  int size = asprintf(&query, "SELECT timestamp FROM transaction WHERE id = %u;", id);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
