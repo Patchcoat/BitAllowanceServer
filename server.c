@@ -351,13 +351,15 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
     exit(1);
   }
   printf("Expirable: %d\n", expirable);
-  if (send(sockfd, "_", 1, 0) == -1)
-    perror("send");
-  if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
-    perror("recv");
-    exit(1);
+  if (expirable == 1) {
+    if (send(sockfd, "_", 1, 0) == -1)
+      perror("send");
+    if ((numbytes = recv(sockfd, expiration, 100, 0)) == -1) { // expiration
+      perror("recv");
+      exit(1);
+    }
+    printf("Expiration: %s\n", expiration);
   }
-  printf("Expiration: %s\n", expiration);
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   if ((numbytes = recv(sockfd, &cooldown, sizeof(uint32_t), 0)) == -1) { // cooldown
@@ -375,7 +377,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
   if (id == 0)
   {
     createTransaction(&id, value, operator, memo, &linked, &executed, type, name, &expirable, expiration, &cooldown, &repeatable);
-    printf("Created Transaction");
+    printf("Created Transaction\n");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
   }
@@ -751,6 +753,149 @@ int updateEntity(int sockfd, int numbytes)
   return 0;
 }
 
+void getTransactionList(int sockfd,int numbytes)
+{
+  uint32_t id;
+  uint32_t count;
+  char buffer[1];
+  if ((numbytes = recv(sockfd, &id, sizeof(uint32_t), 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
+  char *query;
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID IS %u;", id);
+  printf("query: %s\n", query);
+  if (mysql_query(con, query)) {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+  MYSQL_RES *res;
+  MYSQL_ROW row;
+  res = mysql_store_result(con);
+  if (res == NULL)
+    count = 0;
+  else
+    count = mysql_num_rows(res);
+  if (send(sockfd, &count, sizeof(uint32_t), 0) == -1)
+    perror("send");
+  if (count == 0)
+    return;
+
+  while ((row = mysql_fetch_row(res))) {
+    char buffer[1];
+    uint32_t id = atoi(row[0]);
+    char *value = row[1];
+    char *operator = row[2];
+    char *type = row[7];
+    char *memo = row[4];
+    char *name = row[8];
+    uint8_t linked = atoi(row[5]);
+    uint8_t executed = atoi(row[6]);
+    uint8_t expirable = atoi(row[9]);
+    char *expiration = row[10];
+    uint32_t cooldown = atoi(row[11]);
+    uint8_t repeatable = atoi(row[12]);
+
+    if (send(sockfd, "u", 1, 0) == -1) // update
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, &id, 1, 0) == -1) // id
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, value, 1, 0) == -1) // value
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    printf("Value: %s\n", value);
+    if (send(sockfd, operator, 1, 0) == -1) // operator
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    operator[1] = '\0';
+    printf("Operator: %s\n", operator);
+    if (send(sockfd, type, 1, 0) == -1) // type
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    type[1] = '\0';
+    printf("Type: %s\n", type);
+    if (send(sockfd, name, 1, 0) == -1) // name
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    printf("Name: %s\n", name);
+    if (send(sockfd, memo, 1, 0) == -1) // memo
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    printf("Memo: %s\n", memo);
+    if (send(sockfd, &linked, 1, 0) == -1) // linked
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    printf("Linked: %d\n", linked);
+    if (send(sockfd, &executed, 1, 0) == -1) // executed
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, &expirable, 1, 0) == -1) // expirable
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, expiration, 1, 0) == -1) // expiration
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, &cooldown, 1, 0) == -1) // cooldown
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+    if (send(sockfd, &repeatable, 1, 0) == -1) // repeatable
+      perror("send");
+    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+      perror("recv");
+      exit(1);
+    }
+  }
+  if (send(sockfd, "s", 1, 0) == -1) // stop the update
+    perror("send");
+
+  mysql_free_result(res);
+  free(query);
+  printf("server: received query from database");
+}
+
+void getEntityList(int sockfd,int numbytes)
+{
+  uint32_t count;
+}
+
 int normal(int sockfd, int numbytes)
 {
   char *pub_key = "public key\0";
@@ -782,6 +927,19 @@ int normal(int sockfd, int numbytes)
       if (send(sockfd, "_", 1, 0) == -1)
         perror("send");
       updateEntity(sockfd, numbytes);
+    }
+  }
+  else if (type[0] == 'g') {
+    // get
+    if (type[1] == 't') {
+      if (send(sockfd, "_", 1, 0) == -1)
+        perror("send");
+      getTransactionList(sockfd, numbytes);
+    }
+    else if (type[1] == 'e') {
+      if (send(sockfd, "_", 1, 0) == -1)
+        perror("send");
+      getEntityList(sockfd, numbytes);
     }
   }
   return 0;
