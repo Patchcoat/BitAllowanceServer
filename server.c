@@ -238,7 +238,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID)
   row = mysql_fetch_row(res);
 
   free(query);
-  printf("server: received query from database");
+  printf("server: received query from database\n");
   return row;
 }
 
@@ -547,7 +547,7 @@ int updateTransaction(int sockfd, int numbytes)
   if (id == 0)
   {
     updateTransactionDatabase(sockfd, numbytes, id);
-    printf("created entity in database");
+    printf("created transaction in database\n");
     return 0;
   }
   // compare timestamps
