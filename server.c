@@ -232,7 +232,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID)
 
   MYSQL_RES *res;
   MYSQL_ROW row;
-  res = mysql_use_result(con);
+  res = mysql_store_result(con);
   row = mysql_fetch_row(res);
 
   free(query);
