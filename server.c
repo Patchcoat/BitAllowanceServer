@@ -238,7 +238,6 @@ MYSQL_ROW getTransaction(uint32_t transactionID)
   row = mysql_fetch_row(res);
   free(query);
   printf("server: received query from database\n");
-  printf("End?\n");
   return row;
 }
 
@@ -429,8 +428,8 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
-  unsigned long *lengths = 0;
   MYSQL_ROW row = getTransaction(id);
+
   char buffer[1];
   char *value = row[1];
   char *operator = row[2];
@@ -450,8 +449,8 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  printf("Length %d\n", (int) lengths[1]);
-  if (send(sockfd, value, (int) lengths[1], 0) == -1) // value
+  printf("Length %d\n", 1);
+  if (send(sockfd, value, 1, 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
@@ -474,14 +473,14 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   }
   type[1] = '\0';
   printf("Type: %s\n", type);
-  if (send(sockfd, name, (int) lengths[8], 0) == -1) // name
+  if (send(sockfd, name, 1, 0) == -1) // name
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   printf("Name: %s\n", name);
-  if (send(sockfd, memo, (int) lengths[4], 0) == -1) // memo
+  if (send(sockfd, memo, 1, 0) == -1) // memo
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
@@ -507,7 +506,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, expiration, (int) lengths[10], 0) == -1) // expiration
+  if (send(sockfd, expiration, 1, 0) == -1) // expiration
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
