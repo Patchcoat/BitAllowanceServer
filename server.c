@@ -1100,7 +1100,7 @@ int logIn(int sockfd, int numbytes)
   printf("server: received key '%s'\n", key);
   int usernameLen;
   int result = verifyKey(id, key, username, &usernameLen);
-  printf("server: error %d\n", result);
+  printf("server: verify key result %d\n", result);
   if (result != 0) {
     printf("server: error with result\n");
     if (send(sockfd, "n", 1, 0) == -1)
@@ -1129,8 +1129,10 @@ int selector(char value, int sockfd, int numbytes)
     createAccount(sockfd, numbytes);
     break;
   case 'r':
+
     break;
   case 'v':
+
     break;
   case 'n':
     printf("Normal Communication\n");
