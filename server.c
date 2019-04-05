@@ -241,7 +241,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   free(query);
   printf("server: received query from database\n");
   for (int i = 0; i < mysql_num_fields(res); i++) {
-    printf("%lu\n", lengths[i]);
+    printf("%d, %lu\n", i, lengths[i]);
   }
   return row;
 }
@@ -448,7 +448,11 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   char *expiration = row[10];
   uint32_t cooldown = atoi(row[11]);
   uint8_t repeatable = atoi(row[12]);
-  printf("Vars%lu\n", lengths[1]);
+  printf("Vars\n");
+  for (int i = 0; i < 14; i++) {
+    printf("%d, %lu\n", i, lengths[i]);
+  }
+  printf("Post Loop\n");
   if (send(sockfd, "l", 1, 0) == -1) // local update
     perror("send");
   printf("sentl\n");
