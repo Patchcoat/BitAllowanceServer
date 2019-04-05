@@ -241,6 +241,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   free(query);
   printf("server: received query from database\n");
   for (int i = 0; i < (int) mysql_num_fields(res); i++) {
+    lengths[i] = local_lengths[i];
     printf("%lu\n", lengths[i]);
   }
   return row;
