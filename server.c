@@ -394,7 +394,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
     updateTransactionSQL(id, "value", value);
     updateTransactionSQL(id, "operator", operator);
     updateTransactionSQL(id, "memo", memo);
-    updateTransactionSQL(id, "type", type);
+    updateTransactionSQL(id, "transactionType", type);
     updateTransactionSQL(id, "name", name);
     updateTransactionSQL(id, "expiration", expiration);
     char linkedChar = (linked ? '1' : '0');
@@ -407,7 +407,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
     updateTransactionSQL(id, "expirable", &expirableChar);
     updateTransactionSQL(id, "coolDown", &cooldownChar);
     updateTransactionSQL(id, "repeatable", &repeatableChar);
-    printf("updated transaction");
+    printf("updated transaction\n");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
   }
