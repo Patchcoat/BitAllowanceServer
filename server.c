@@ -429,7 +429,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
-  unsigned long *lengths;
+  unsigned long lengths[12];
   MYSQL_ROW row = getTransaction(id, lengths);
   printf("Transactions\n");
   char buffer[1];
