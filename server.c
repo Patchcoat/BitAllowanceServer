@@ -220,7 +220,7 @@ void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
   printf("server: updated database");
 }
 
-MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
+MYSQL_RES *getTransaction(uint32_t transactionID)
 {
   char *query;
   int size = asprintf(&query, "SELECT * FROM transaction WHERE id = %u", transactionID);
@@ -233,18 +233,10 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   }
 
   MYSQL_RES *res;
-  MYSQL_ROW row;
   res = mysql_store_result(con);
-  row = mysql_fetch_row(res);
-  unsigned long *local_lengths = mysql_fetch_lengths(res);
-  lengths = local_lengths;
   free(query);
   printf("server: received query from database\n");
-  for (int i = 0; i < (int) mysql_num_fields(res); i++) {
-    lengths[i] = local_lengths[i];
-    printf("%lu\n", lengths[i]);
-  }
-  return row;
+  return res;
 }
 
 void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
@@ -434,8 +426,9 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
-  unsigned long lengths[14];
-  MYSQL_ROW row = getTransaction(id, lengths);
+  MYSQL_RES *res = getTransaction(id);
+  MYSQL_ROW row = mysql_fetch_row(res);
+  unsigned long *lengths = mysql_fetch_lengths(res);
   printf("Transactions\n");
   char buffer[1];
   char *value = row[1];
