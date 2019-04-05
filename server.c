@@ -677,11 +677,11 @@ void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
   unsigned long *lengths = mysql_fetch_lengths(res);
 
   char buffer[1];
-  char *username = row[1];
-  char *displayName = row[2];
-  char *birthday = row[3];
-  char *email = row[4];
-  char *value = row[6];
+  char *username = row[2];
+  char *displayName = row[3];
+  char *birthday = row[4];
+  char *email = row[5];
+  char *value = row[7];
 
   if (send(sockfd, "l", 1, 0) == -1) // remote update
     perror("send");
@@ -705,7 +705,7 @@ void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
   }
   if (send(sockfd, displayName, lengths[2], 0) == -1) // displayName
     perror("send");
-  printf("DisplayName: %s\n", displayName);
+  printf("Display Name: %s\n", displayName);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
