@@ -256,10 +256,16 @@ void linkEntityAndTransaction(uint32_t transactionID, uint32_t entityID)
 // returns 1 if the timestamp in the database is the newest
 // returns -1 if the provided by the phone is the newest
 // returns 0 if the timestamps are the same
-int compareTimestamps(uint32_t id, char *timestamp)
+int compareTimestamps(uint32_t id, char *timestamp, int tableType)
 {
   char *query;
-  int size = asprintf(&query, "SELECT timestamp FROM transaction WHERE id = %u", id);
+  char *table;
+  if (tableType == 0) {
+    table = "transaction";
+  } else if (tableType == 1) {
+    table = "entity";
+  }
+  int size = asprintf(&query, "SELECT timestamp FROM %s WHERE id = %u", table, id);
   printf("query: %s\n", query);
   printf("timestamp: %s\n", timestamp);
   for(; mysql_next_result(con) == 0;)
@@ -554,7 +560,7 @@ int updateTransaction(int sockfd, int numbytes)
   // compare timestamps
   // -1 = timestamp from phone is the newest, so use that one
   //  1 = timestamp from database is the newest, so use that one
-  int compare = compareTimestamps(id, timestamp);
+  int compare = compareTimestamps(id, timestamp, 0);
   printf("Timestamp compare: %d\n", compare);
   if (compare < 0)
   {
@@ -751,7 +757,7 @@ int updateEntity(int sockfd, int numbytes)
   // compare timestamps
   // -1 = timestamp from phone is the newest, so use that one
   //  1 = timestamp from database is the newest, so use that one
-  int compare = compareTimestamps(id, timestamp);
+  int compare = compareTimestamps(id, timestamp, 1);
   printf("Timestamp: %d\n", compare);
   if (compare < 0)
   {
