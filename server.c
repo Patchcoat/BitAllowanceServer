@@ -453,48 +453,48 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   printf("recivl\n");
   if (send(sockfd, value, 1, 0) == -1) // value
     perror("send");
+  printf("Value: %s\n", value);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  printf("Value: %s\n", value);
   if (send(sockfd, operator, 1, 0) == -1) // operator
     perror("send");
-  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-    perror("recv");
-    exit(1);
-  }
   operator[1] = '\0';
   printf("Operator: %s\n", operator);
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
   if (send(sockfd, type, 1, 0) == -1) // type
     perror("send");
-  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-    perror("recv");
-    exit(1);
-  }
   type[1] = '\0';
   printf("Type: %s\n", type);
+  if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+    perror("recv");
+    exit(1);
+  }
   if (send(sockfd, name, 1, 0) == -1) // name
     perror("send");
+  printf("Name: %s\n", name);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  printf("Name: %s\n", name);
   if (send(sockfd, memo, 1, 0) == -1) // memo
     perror("send");
+  printf("Memo: %s\n", memo);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  printf("Memo: %s\n", memo);
   if (send(sockfd, &linked, 1, 0) == -1) // linked
     perror("send");
+  printf("Linked: %d\n", linked);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  printf("Linked: %d\n", linked);
   if (send(sockfd, &executed, 1, 0) == -1) // executed
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
