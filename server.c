@@ -600,7 +600,7 @@ void updateEntitySQL(uint32_t entityID, char *name, char *value)
 MYSQL_RES *getEntity(uint32_t entityID)
 {
   char *query;
-  int size = asprintf(&query, "SELECT * FROM entity WHERE ID IS %u", entityID);
+  int size = asprintf(&query, "SELECT * FROM entity WHERE id = %u", entityID);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;)
     /* do nothing */;
