@@ -261,18 +261,21 @@ int compareTimestamps(uint32_t id, char *timestamp)
   char *query;
   int size = asprintf(&query, "SELECT timestamp FROM transaction WHERE id = %u", id);
   printf("query: %s\n", query);
+  printf("timestamp: %s\n", timestamp);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
   }
-
+  printf("made query\n");
   MYSQL_RES *res;
   MYSQL_ROW row;
   char *db_timestamp;
   res = mysql_use_result(con);
   row = mysql_fetch_row(res);
   db_timestamp = row[1];
-
+  printf("got row and timestamp\n");
   mysql_free_result(res);
   free(query);
   printf("server: compared the timestamps\n");
@@ -585,7 +588,7 @@ void createEntity(uint32_t *id, char *username, char *displayName, char *birthda
 void updateEntitySQL(uint32_t entityID, char *name, char *value)
 {
   char *query;
-  int size = asprintf(&query, "UPDATE entity SET %s = %s WHERE id = %d;", name, value, entityID);
+  int size = asprintf(&query, "UPDATE entity SET %s = %s WHERE id = %d", name, value, entityID);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
