@@ -216,7 +216,7 @@ void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
   }
 
   free(query);
-  printf("server: updated database");
+  printf("server: updated database\n");
 }
 
 MYSQL_RES *getTransaction(uint32_t transactionID)
@@ -782,7 +782,7 @@ void getTransactionList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID IS %u;", id);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID = %u;", id);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
@@ -920,7 +920,7 @@ void getEntityList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID IS %u;", id);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID = %u;", id);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
