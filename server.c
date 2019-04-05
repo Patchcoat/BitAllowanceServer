@@ -396,7 +396,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
     updateTransactionSQL(id, "memo", memo);
     updateTransactionSQL(id, "transactionType", type);
     updateTransactionSQL(id, "name", name);
-    updateTransactionSQL(id, "expiration", expiration);
+    updateTransactionSQL(id, "expirationDate", expiration);
     char linkedChar = (linked ? '1' : '0');
     char executedChar = (executed ? '1' : '0');
     char expirableChar = (expirable ? '1' : '0');
