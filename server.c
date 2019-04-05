@@ -220,7 +220,7 @@ void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
   printf("server: updated database");
 }
 
-MYSQL_ROW getTransaction(uint32_t transactionID)
+MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *length)
 {
   char *query;
   int size = asprintf(&query, "SELECT * FROM transaction WHERE id = %u", transactionID);
@@ -236,6 +236,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID)
   MYSQL_ROW row;
   res = mysql_store_result(con);
   row = mysql_fetch_row(res);
+  length = mysql_fetch_lengths(res);
   free(query);
   printf("server: received query from database\n");
   return row;
@@ -429,7 +430,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
   unsigned long *length;
-  MYSQL_ROW row = getTransaction(id);
+  MYSQL_ROW row = getTransaction(id, length);
 
   char buffer[1];
   char *value = row[1];
@@ -450,7 +451,6 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  printf("Length %d\n", 1);
   if (send(sockfd, value, 1, 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
