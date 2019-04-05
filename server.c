@@ -271,11 +271,10 @@ int compareTimestamps(uint32_t id, char *timestamp)
   printf("made query\n");
   MYSQL_RES *res;
   MYSQL_ROW row;
-  printf("res and row\n");
   res = mysql_use_result(con);
   row = mysql_fetch_row(res);
-  printf("res and row, the reckoning\n");
-  char *db_timestamp = row[1];
+  printf("res and row\n");
+  char *db_timestamp = row[0];
   printf("got row and timestamp\n");
   mysql_free_result(res);
   free(query);
