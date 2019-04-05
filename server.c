@@ -240,8 +240,13 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   lengths = local_lengths;
   free(query);
   printf("server: received query from database\n");
-  for (int i = 0; i < mysql_num_fields(res); i++) {
-    printf("%d, %lu\n", i, lengths[i]);
+  unsigned long count;
+  for (int i = 0; i < (int) mysql_num_fields(res); i++) {
+    count += lengths[i];
+  }
+  lengths = malloc(count);
+  for (int i = 0; i < (int) mysql_num_fields(res); i++) {
+    printf("%lu\n", lengths[i]);
   }
   return row;
 }
