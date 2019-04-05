@@ -175,7 +175,7 @@ int createAccount(int sockfd, int numbytes)
   if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
     perror("send");
 
-  printf("server: sent ID\n");
+  printf("server: sent ID%u\n", id);
 
   return 0;
 }
