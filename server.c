@@ -597,25 +597,25 @@ void updateEntitySQL(uint32_t entityID, char *name, char *value)
   printf("server: updated database");
 }
 
-MYSQL_ROW getEntity(uint32_t entityID)
+MYSQL_RES *getEntity(uint32_t entityID)
 {
   char *query;
-  int size = asprintf(&query, "SELECT * FROM entity WHERE ID IS %u;", entityID);
+  int size = asprintf(&query, "SELECT * FROM entity WHERE ID IS %u", entityID);
   printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
   }
 
   MYSQL_RES *res;
-  MYSQL_ROW row;
-  res = mysql_use_result(con);
-  row = mysql_fetch_row(res);
+  res = mysql_store_result(con);
 
   free(query);
   printf("server: received query from database");
 
-  return row;
+  return res;
 }
 
 void updateEntityDatabase(int sockfd, int numbytes, uint32_t id)
@@ -672,7 +672,9 @@ void updateEntityDatabase(int sockfd, int numbytes, uint32_t id)
 
 void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
 {
-  MYSQL_ROW row = getEntity(id);
+  MYSQL_RES *res = getEntity(id);
+  MYSQL_ROW row = mysql_fetch_row(res);
+  unsigned long *lengths = mysql_fetch_lengths(res);
 
   char buffer[1];
   char *username = row[1];
@@ -687,31 +689,31 @@ void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, value, 100, 0) == -1) // value
+  if (send(sockfd, value, lengths[6], 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, username, 100, 0) == -1) // username
+  if (send(sockfd, username, lengths[1], 0) == -1) // username
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, displayName, 100, 0) == -1) // displayName
+  if (send(sockfd, displayName, lengths[2], 0) == -1) // displayName
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, birthday, 100, 0) == -1) // birthday
+  if (send(sockfd, birthday, lengths[3], 0) == -1) // birthday
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, email, 100, 0) == -1) // email
+  if (send(sockfd, email, lengths[4], 0) == -1) // email
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
