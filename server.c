@@ -194,6 +194,8 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
                       value, operator, memo, linkedInt, executedInt, transactionType, name, expirableInt,
                       expirationDate, coolDownInt, repeatableInt);
   printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
@@ -210,6 +212,8 @@ void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
   char *query;
   int size = asprintf(&query, "UPDATE transaction SET %s = '%s' WHERE id = %d;", name, value, transactionID);
   printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
@@ -596,6 +600,8 @@ void updateEntitySQL(uint32_t entityID, char *name, char *value)
   char *query;
   int size = asprintf(&query, "UPDATE entity SET %s = %s WHERE id = %d", name, value, entityID);
   printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
@@ -782,8 +788,10 @@ void getTransactionList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE transactionID = %u;", id);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE transactionID = %u", id);
   printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
@@ -920,8 +928,10 @@ void getEntityList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE entityID = %u;", id);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE entityID = %u", id);
   printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
