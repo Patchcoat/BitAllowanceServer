@@ -445,10 +445,12 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 
   if (send(sockfd, "l", 1, 0) == -1) // local update
     perror("send");
+  printf("sentl");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
+  printf("recivl");
   if (send(sockfd, value, 1, 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
