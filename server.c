@@ -444,7 +444,7 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   char *expiration = row[10];
   uint32_t cooldown = atoi(row[11]);
   uint8_t repeatable = atoi(row[12]);
-  printf("Vars\n");
+  printf("Vars%lu\n", lengths[1]);
   if (send(sockfd, "l", 1, 0) == -1) // local update
     perror("send");
   printf("sentl\n");
