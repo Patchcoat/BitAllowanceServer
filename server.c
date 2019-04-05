@@ -172,8 +172,7 @@ int createAccount(int sockfd, int numbytes)
   uint32_t id;
   writeAccount(&id, key, username, display, email);
 
-  uint32_t networkOrderID = htonl(id);
-  if (send(sockfd, &networkOrderID, sizeof(uint32_t), 0) == -1)
+  if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
     perror("send");
 
   printf("server: sent ID\n");
