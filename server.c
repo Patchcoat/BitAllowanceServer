@@ -238,6 +238,7 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   row = mysql_fetch_row(res);
   unsigned long *local_lengths = mysql_fetch_lengths(res);
   lengths = local_lengths;
+  mysql_free_result(res);
   free(query);
   printf("server: received query from database\n");
   return row;
@@ -430,7 +431,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
-  unsigned long lengths[12];
+  unsigned long *lengths;
   MYSQL_ROW row = getTransaction(id, lengths);
   printf("Transactions\n");
   char buffer[1];
