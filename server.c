@@ -1043,7 +1043,10 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   printf("Verify Key\n");
   char *pubKey;
   char *query;
-  int size = asprintf(&query, "SELECT * FROM reserve where id='%d';\0", id);
+  int size = asprintf(&query, "SELECT * FROM reserve where id = %u", id);
+  printf("query: %s\n", query);
+  for(; mysql_next_result(con) == 0;)
+    /* do nothing */;
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
@@ -1052,7 +1055,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   MYSQL_RES *res;
   MYSQL_ROW row;
   unsigned int i;
-  res = mysql_use_result(con);
+  res = mysql_store_result(con);
   printf("Got result\n");
   row = mysql_fetch_row(res);
   unsigned long *lengths = mysql_fetch_lengths(res);
