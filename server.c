@@ -749,6 +749,7 @@ int updateEntity(int sockfd, int numbytes)
   // -1 = timestamp from phone is the newest, so use that one
   //  1 = timestamp from database is the newest, so use that one
   int compare = compareTimestamps(id, timestamp);
+  printf("Timestamp: %d\n", compare);
   if (compare < 0)
   {
     updateEntityDatabase(sockfd, numbytes, id);
