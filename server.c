@@ -1091,7 +1091,6 @@ int logIn(int sockfd, int numbytes)
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   printf("server: received id '%d'\n", id);
-
   // client public key
   if ((numbytes = recv(sockfd, key, 544, 0)) == -1) {
     perror("recv");
