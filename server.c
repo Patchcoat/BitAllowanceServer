@@ -289,7 +289,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
   uint8_t linked = 0;
   uint8_t executed = 0;
   uint8_t expirable = 0;
-  char expiration[100];
+  char expiration[100] = "null";
   uint32_t cooldown;
   uint8_t repeatable = 0;
   if (send(sockfd, "r", 1, 0) == -1) // remote update
@@ -407,7 +407,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
     perror("recv");
     exit(1);
   }
-  printf("Count: %d", count);
+  printf("Count: %d\n", count);
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   for (uint32_t i = 0; i < count; i++) {
