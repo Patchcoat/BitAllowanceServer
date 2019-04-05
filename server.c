@@ -613,7 +613,7 @@ MYSQL_RES *getEntity(uint32_t entityID)
   res = mysql_store_result(con);
 
   free(query);
-  printf("server: received query from database");
+  printf("server: received query from database\n");
 
   return res;
 }
@@ -691,30 +691,35 @@ void updateEntityPhone(int sockfd, int numbytes, uint32_t id)
   }
   if (send(sockfd, value, lengths[6], 0) == -1) // value
     perror("send");
+  printf("Value: %s\n", value);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   if (send(sockfd, username, lengths[1], 0) == -1) // username
     perror("send");
+  printf("Username: %s\n", username);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   if (send(sockfd, displayName, lengths[2], 0) == -1) // displayName
     perror("send");
+  printf("DisplayName: %s\n", displayName);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   if (send(sockfd, birthday, lengths[3], 0) == -1) // birthday
     perror("send");
+  printf("Birthday: %s\n", birthday);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
   if (send(sockfd, email, lengths[4], 0) == -1) // email
     perror("send");
+  printf("Email: %s\n", email);
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
