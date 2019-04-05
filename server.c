@@ -429,7 +429,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
 int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
 {
   MYSQL_ROW row = getTransaction(id);
-
+  printf("Transactions\n");
   char buffer[1];
   char *value = row[1];
   char *operator = row[2];
@@ -442,15 +442,15 @@ int updateTransactionPhone(int sockfd, int numbytes, uint32_t id)
   char *expiration = row[10];
   uint32_t cooldown = atoi(row[11]);
   uint8_t repeatable = atoi(row[12]);
-
+  printf("Vars\n");
   if (send(sockfd, "l", 1, 0) == -1) // local update
     perror("send");
-  printf("sentl");
+  printf("sentl\n");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  printf("recivl");
+  printf("recivl\n");
   if (send(sockfd, value, 1, 0) == -1) // value
     perror("send");
   if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
