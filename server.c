@@ -1051,14 +1051,11 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   printf("Selected Key\n");
   MYSQL_RES *res;
   MYSQL_ROW row;
-  unsigned long *lengths;
-  unsigned int num_fields;
   unsigned int i;
   res = mysql_use_result(con);
   printf("Got result\n");
   row = mysql_fetch_row(res);
-  num_fields = mysql_num_fields(res);
-  lengths = mysql_fetch_lengths(res);
+  unsigned long *lengths = mysql_fetch_lengths(res);
   printf("[%.*s]\n", (int) lengths[1], row[1]);
   pubKey = row[1];
   strcpy(username, row[2]);
