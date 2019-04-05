@@ -237,14 +237,10 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   res = mysql_store_result(con);
   row = mysql_fetch_row(res);
   unsigned long *local_lengths = mysql_fetch_lengths(res);
+  lengths = malloc(mysql_num_fields(res) * sizeof(unsigned long));
   lengths = local_lengths;
   free(query);
   printf("server: received query from database\n");
-  unsigned long count;
-  for (int i = 0; i < (int) mysql_num_fields(res); i++) {
-    count += lengths[i];
-  }
-  lengths = malloc(count);
   for (int i = 0; i < (int) mysql_num_fields(res); i++) {
     printf("%lu\n", lengths[i]);
   }
