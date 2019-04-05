@@ -208,7 +208,7 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
 void updateTransactionSQL(uint32_t transactionID, char *name, char *value)
 {
   char *query;
-  int size = asprintf(&query, "UPDATE transaction SET %s = %s WHERE id = %d;", name, value, transactionID);
+  int size = asprintf(&query, "UPDATE transaction SET %s = '%s' WHERE id = %d;", name, value, transactionID);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
@@ -274,14 +274,14 @@ int compareTimestamps(uint32_t id, char *timestamp, int tableType)
     fprintf(stderr, "%s\n", mysql_error(con));
     exit(1);
   }
-  printf("made query\n");
+
   MYSQL_RES *res;
   MYSQL_ROW row;
   res = mysql_store_result(con);
   row = mysql_fetch_row(res);
-  printf("row %s\n", row[0]);
+  printf("server timestamp: %s\n", row[0]);
   char *db_timestamp = row[0];
-  printf("got row and timestamp\n");
+
   mysql_free_result(res);
   free(query);
   printf("server: compared the timestamps\n");
