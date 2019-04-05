@@ -1056,8 +1056,8 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   unsigned int i;
   res = mysql_use_result(con);
   printf("Got result\n");
-  num_fields = mysql_num_fields(res);
   row = mysql_fetch_row(res);
+  num_fields = mysql_num_fields(res);
   lengths = mysql_fetch_lengths(res);
   printf("[%.*s]\n", (int) lengths[1], row[1]);
   pubKey = row[1];
@@ -1071,6 +1071,7 @@ int verifyKey(uint32_t id, char *key, char *username, int *usernameLen)
   }
 
   mysql_free_result(res);
+  free(query);
   return 0;
 }
 
