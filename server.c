@@ -236,7 +236,8 @@ MYSQL_ROW getTransaction(uint32_t transactionID, unsigned long *lengths)
   MYSQL_ROW row;
   res = mysql_store_result(con);
   row = mysql_fetch_row(res);
-  lengths = mysql_fetch_lengths(res);
+  unsigned long *local_lengths = mysql_fetch_lengths(res);
+  lengths = local_lengths;
   free(query);
   printf("server: received query from database\n");
   return row;
