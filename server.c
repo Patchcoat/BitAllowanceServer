@@ -787,6 +787,7 @@ void getTransactionList(int sockfd,int numbytes)
     perror("recv");
     exit(1);
   }
+  printf("id: %lu\n", id);
   char *query;
   int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID = %u", id);
   printf("query: %s\n", query);
