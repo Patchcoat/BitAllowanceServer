@@ -931,24 +931,6 @@ void getTransactionList(int sockfd,int numbytes)
       perror("recv");
       exit(1);
     }
-    if (send(sockfd, "d", 1, 0) == -1) // stop the update
-      perror("send");
-    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-      perror("recv");
-      exit(1);
-    }
-    if (send(sockfd, "e", 1, 0) == -1) // stop the update
-      perror("send");
-    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-      perror("recv");
-      exit(1);
-    }
-    if (send(sockfd, "f", 1, 0) == -1) // stop the update
-      perror("send");
-    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-      perror("recv");
-      exit(1);
-    }
   }
   if (send(sockfd, "s", 1, 0) == -1) // stop the update
     perror("send");
