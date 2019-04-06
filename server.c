@@ -816,7 +816,6 @@ void getTransactionList(int sockfd,int numbytes)
     return;
 
   while ((row = mysql_fetch_row(res))) {
-    count--;
     char buffer[1];
     uint32_t id = atoi(row[0]);
     char *value = row[1];
@@ -833,6 +832,7 @@ void getTransactionList(int sockfd,int numbytes)
 
     if (send(sockfd, "u", 1, 0) == -1) // update
       perror("send");
+    printf("Send U\n");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
@@ -925,8 +925,6 @@ void getTransactionList(int sockfd,int numbytes)
       exit(1);
     }
     printf("Repeatable: %d\n", repeatable);
-    if (count <= 0)
-      break;
   }
   if (send(sockfd, "s", 1, 0) == -1) // stop the update
     perror("send");
