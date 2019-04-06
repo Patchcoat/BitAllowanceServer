@@ -182,7 +182,7 @@ int createAccount(int sockfd, int numbytes)
 
 void createTransaction(uint32_t *id, char *value, char *operator, char *memo, uint8_t *linked,
                        uint8_t *executed, char *transactionType, char *name, uint8_t *expirable,
-                       char *expirationDate, uint32_t *coolDown, uint8_t *repeatable)
+                       char *expirationDate, uint32_t *coolDown, uint8_t *repeatable, uint32_t reserveID)
 {
   char *query;
   unsigned int coolDownInt = (unsigned int) *coolDown;
@@ -190,9 +190,9 @@ void createTransaction(uint32_t *id, char *value, char *operator, char *memo, ui
   unsigned int executedInt = (unsigned int) *executed;
   unsigned int expirableInt = (unsigned int) *expirable;
   unsigned int repeatableInt = (unsigned int) *repeatable;
-  int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable) VALUES (%s, '%s', '%s', %u, %u, '%s', '%s', %u, '%s', %u, %u);",
+  int size = asprintf(&query, "INSERT INTO transaction (value, operator, memo, linked, executed, transactionType, name, expirable, expirationDate, coolDown, repeatable, reserveID) VALUES (%s, '%s', '%s', %u, %u, '%s', '%s', %u, '%s', %u, %u, %u);",
                       value, operator, memo, linkedInt, executedInt, transactionType, name, expirableInt,
-                      expirationDate, coolDownInt, repeatableInt);
+                      expirationDate, coolDownInt, repeatableInt, reserveID);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;)
     /* do nothing */;
@@ -305,6 +305,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
   char expiration[100] = "null";
   uint32_t cooldown;
   uint8_t repeatable = 0;
+  uint32_t reserveID;
   if (send(sockfd, "r", 1, 0) == -1) // remote update
     perror("send");
   if ((numbytes = recv(sockfd, value, 100, 0)) == -1) { // value
@@ -386,9 +387,16 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
     exit(1);
   }
   printf("Repeatable: %d\n", repeatable);
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &reserveID, sizeof(uint32_t), 0)) == -1) { // repeatable
+    perror("recv");
+    exit(1);
+  }
+  printf("Reserve ID: %d\n", reserveID);
   if (id == 0)
   {
-    createTransaction(&id, value, operator, memo, &linked, &executed, type, name, &expirable, expiration, &cooldown, &repeatable);
+    createTransaction(&id, value, operator, memo, &linked, &executed, type, name, &expirable, expiration, &cooldown, &repeatable, reserveID);
     printf("Created Transaction\n");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
