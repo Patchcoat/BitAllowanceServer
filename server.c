@@ -987,36 +987,42 @@ void getEntityList(int sockfd,int numbytes)
       perror("recv");
       exit(1);
     }
+    printf("ID: %d\n", id);
     if (send(sockfd, value, 100, 0) == -1) // value
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
+    printf("Value: %s\n", value);
     if (send(sockfd, username, 100, 0) == -1) // username
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
+    printf("Username: %s\n", username);
     if (send(sockfd, displayName, 100, 0) == -1) // displayName
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
+    printf("Display Name: %s\n", displayName);
     if (send(sockfd, birthday, 100, 0) == -1) // birthday
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
+    printf("Birthday: %s\n", birthday);
     if (send(sockfd, email, 100, 0) == -1) // email
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
+    printf("Email: %s\n", email);
   }
   if (send(sockfd, "s", 1, 0) == -1) // stop the update
     perror("send");
