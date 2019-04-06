@@ -948,7 +948,7 @@ void getEntityList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID = %u", id);
+  int size = asprintf(&query, "SELECT * FROM entity WHERE reserveID = %u", id);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;)
     /* do nothing */;
