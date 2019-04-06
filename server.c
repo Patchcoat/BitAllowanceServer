@@ -800,10 +800,7 @@ void getTransactionList(int sockfd,int numbytes)
   MYSQL_RES *res;
   MYSQL_ROW row;
   res = mysql_store_result(con);
-  if (res == NULL)
-    count = 0;
-  else
-    count = mysql_num_rows(res);
+  count = mysql_num_rows(res);
   printf("count %d\n", count);
   if (send(sockfd, &count, sizeof(uint32_t), 0) == -1)
     perror("send");
