@@ -810,6 +810,7 @@ void getTransactionList(int sockfd,int numbytes)
   res = mysql_store_result(con);
   count = mysql_num_rows(res);
   printf("count %d\n", count);
+  
   if (send(sockfd, &count, sizeof(uint32_t), 0) == -1)
     perror("send");
   if (count == 0)
@@ -830,6 +831,7 @@ void getTransactionList(int sockfd,int numbytes)
     char *expiration = row[10];
     uint32_t cooldown = atoi(row[11]);
     uint8_t repeatable = atoi(row[12]);
+    unsigned long *lengths = mysql_fetch_lengths(res);
 
     if (send(sockfd, "u", 1, 0) == -1) // update
       perror("send");
@@ -838,14 +840,14 @@ void getTransactionList(int sockfd,int numbytes)
       perror("recv");
       exit(1);
     }
-    if (send(sockfd, &id, 1, 0) == -1) // id
+    if (send(sockfd, &id, sizeof(uint32_t), 0) == -1) // id
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("ID: %d\n", id);
-    if (send(sockfd, value, 1, 0) == -1) // value
+    if (send(sockfd, value, lengths[1], 0) == -1) // value
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
@@ -868,35 +870,35 @@ void getTransactionList(int sockfd,int numbytes)
     }
     type[1] = '\0';
     printf("Type: %s\n", type);
-    if (send(sockfd, name, 1, 0) == -1) // name
+    if (send(sockfd, name, lengths[8], 0) == -1) // name
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Name: %s\n", name);
-    if (send(sockfd, memo, 1, 0) == -1) // memo
+    if (send(sockfd, memo, lengths[4], 0) == -1) // memo
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Memo: %s\n", memo);
-    if (send(sockfd, &linked, 1, 0) == -1) // linked
+    if (send(sockfd, &linked, sizeof(uint8_t), 0) == -1) // linked
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Linked: %d\n", linked);
-    if (send(sockfd, &executed, 1, 0) == -1) // executed
+    if (send(sockfd, &executed, sizeof(uint8_t), 0) == -1) // executed
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Executed: %d\n", executed);
-    if (send(sockfd, &expirable, 1, 0) == -1) // expirable
+    if (send(sockfd, &expirable, sizeof(uint8_t), 0) == -1) // expirable
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
@@ -904,7 +906,7 @@ void getTransactionList(int sockfd,int numbytes)
     }
     printf("Expirable: %d\n", expirable);
     if (expirable != 0) {
-      if (send(sockfd, expiration, 1, 0) == -1) // expiration
+      if (send(sockfd, expiration, lengths[10], 0) == -1) // expiration
         perror("send");
       if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
         perror("recv");
@@ -912,14 +914,14 @@ void getTransactionList(int sockfd,int numbytes)
       }
       printf("Expiration: %s\n", expiration);
     }
-    if (send(sockfd, &cooldown, 1, 0) == -1) // cooldown
+    if (send(sockfd, &cooldown, sizeof(uint32_t), 0) == -1) // cooldown
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Cooldown: %d\n", cooldown);
-    if (send(sockfd, &repeatable, 1, 0) == -1) // repeatable
+    if (send(sockfd, &repeatable, sizeof(uint8_t), 0) == -1) // repeatable
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
@@ -957,6 +959,7 @@ void getEntityList(int sockfd,int numbytes)
   MYSQL_RES *res;
   MYSQL_ROW row;
   res = mysql_store_result(con);
+
   if (res == NULL)
     count = 0;
   else
@@ -974,49 +977,49 @@ void getEntityList(int sockfd,int numbytes)
     char *birthday = row[3];
     char *email = row[4];
     char *value = row[6];
-
+    unsigned long *lengths = mysql_fetch_lengths(res);
     if (send(sockfd, "u", 1, 0) == -1) // remote update
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
-    if (send(sockfd, &id, 100, 0) == -1) // id
+    if (send(sockfd, &id, sizeof(uint32_t), 0) == -1) // id
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("ID: %d\n", id);
-    if (send(sockfd, value, 100, 0) == -1) // value
+    if (send(sockfd, value, lengths[6], 0) == -1) // value
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Value: %s\n", value);
-    if (send(sockfd, username, 100, 0) == -1) // username
+    if (send(sockfd, username, lengths[1], 0) == -1) // username
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Username: %s\n", username);
-    if (send(sockfd, displayName, 100, 0) == -1) // displayName
+    if (send(sockfd, displayName, lengths[2], 0) == -1) // displayName
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Display Name: %s\n", displayName);
-    if (send(sockfd, birthday, 100, 0) == -1) // birthday
+    if (send(sockfd, birthday, lengths[3], 0) == -1) // birthday
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Birthday: %s\n", birthday);
-    if (send(sockfd, email, 100, 0) == -1) // email
+    if (send(sockfd, email, lengths[4], 0) == -1) // email
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
