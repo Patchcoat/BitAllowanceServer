@@ -389,7 +389,7 @@ int updateTransactionDatabase(int sockfd, int numbytes, uint32_t id)
   printf("Repeatable: %d\n", repeatable);
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
-  if ((numbytes = recv(sockfd, &reserveID, sizeof(uint32_t), 0)) == -1) { // repeatable
+  if ((numbytes = recv(sockfd, &reserveID, sizeof(uint32_t), 0)) == -1) { // reserveID
     perror("recv");
     exit(1);
   }
@@ -647,34 +647,41 @@ void updateEntityDatabase(int sockfd, int numbytes, uint32_t id)
   char birthday[100];
   char email[100];
   char value[100];
+  uint32_t reserveID;
 
-  if (send(sockfd, "r", 1, 0) == -1) // remote update
+  if (send(sockfd, "r", 1, 0) == -1)
     perror("send");
   if ((numbytes = recv(sockfd, value, 100, 0)) == -1) { // value
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, "_", 1, 0) == -1) // remote update
+  if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   if ((numbytes = recv(sockfd, username, 100, 0)) == -1) { // username
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, "_", 1, 0) == -1) // remote update
+  if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   if ((numbytes = recv(sockfd, displayName, 100, 0)) == -1) { // displayName
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, "_", 1, 0) == -1) // remote update
+  if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   if ((numbytes = recv(sockfd, birthday, 100, 0)) == -1) { // birthday
     perror("recv");
     exit(1);
   }
-  if (send(sockfd, "_", 1, 0) == -1) // remote update
+  if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   if ((numbytes = recv(sockfd, email, 100, 0)) == -1) { // email
+    perror("recv");
+    exit(1);
+  }
+  if (send(sockfd, "_", 1, 0) == -1)
+    perror("send");
+  if ((numbytes = recv(sockfd, &reserveID, sizeof(uint32_t), 0)) == -1) { // reserveID
     perror("recv");
     exit(1);
   }
