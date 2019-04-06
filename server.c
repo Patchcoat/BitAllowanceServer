@@ -1019,6 +1019,7 @@ int normal(int sockfd, int numbytes)
     perror("recv");
     exit(1);
   }
+  printf("got key");
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   char type[4];
