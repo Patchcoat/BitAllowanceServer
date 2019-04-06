@@ -587,10 +587,11 @@ int updateTransaction(int sockfd, int numbytes)
   return 0;
 }
 
-void createEntity(uint32_t *id, char *username, char *displayName, char *birthday, char *email, char *cashBalance)
+void createEntity(uint32_t *id, char *username, char *displayName, char *birthday, char *email, char *cashBalance
+                  ,uint32_t reserveID)
 {
   char *query;
-  int size = asprintf(&query, "INSERT INTO entity (username, displayName, birthday, email, cashBalance) VALUES ('%s', '%s', '%s', '%s', %s)", username, displayName, birthday, email, cashBalance);
+  int size = asprintf(&query, "INSERT INTO entity (username, displayName, birthday, email, cashBalance, reserveID) VALUES ('%s', '%s', '%s', '%s', %s, %d)", username, displayName, birthday, email, cashBalance, reserveID);
   printf("query: %s\n", query);
   if (mysql_query(con, query)) {
     fprintf(stderr, "%s\n", mysql_error(con));
@@ -686,7 +687,7 @@ void updateEntityDatabase(int sockfd, int numbytes, uint32_t id)
     exit(1);
   }
   if (id == 0) {
-    createEntity(&id, username, displayName, birthday, email, value);
+    createEntity(&id, username, displayName, birthday, email, value, reserveID);
     printf("Created Transaction\n");
     if (send(sockfd, &id, sizeof(uint32_t), 0) == -1)
       perror("send");
