@@ -928,6 +928,7 @@ void getTransactionList(int sockfd,int numbytes)
   }
   if (send(sockfd, "s", 1, 0) == -1) // stop the update
     perror("send");
+  printf("Sent S\n");
 
   mysql_free_result(res);
   free(query);
