@@ -606,7 +606,7 @@ void createEntity(uint32_t *id, char *username, char *displayName, char *birthda
 void updateEntitySQL(uint32_t entityID, char *name, char *value)
 {
   char *query;
-  int size = asprintf(&query, "UPDATE entity SET %s = %s WHERE id = %d", name, value, entityID);
+  int size = asprintf(&query, "UPDATE entity SET %s = '%s' WHERE id = %d", name, value, entityID);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;)
     /* do nothing */;
