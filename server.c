@@ -842,6 +842,7 @@ void getTransactionList(int sockfd,int numbytes)
       perror("recv");
       exit(1);
     }
+    printf("ID: %d\n", id);
     if (send(sockfd, value, 1, 0) == -1) // value
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
@@ -892,17 +893,22 @@ void getTransactionList(int sockfd,int numbytes)
       perror("recv");
       exit(1);
     }
+    printf("Executed: %d\n", executed);
     if (send(sockfd, &expirable, 1, 0) == -1) // expirable
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
-    if (send(sockfd, expiration, 1, 0) == -1) // expiration
-      perror("send");
-    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-      perror("recv");
-      exit(1);
+    printf("Expirable: %d\n", expirable);
+    if (expirable != 0) {
+      if (send(sockfd, expiration, 1, 0) == -1) // expiration
+        perror("send");
+      if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
+        perror("recv");
+        exit(1);
+      }
+      printf("Expiration: %s\n", expiration);
     }
     if (send(sockfd, &cooldown, 1, 0) == -1) // cooldown
       perror("send");
@@ -910,12 +916,14 @@ void getTransactionList(int sockfd,int numbytes)
       perror("recv");
       exit(1);
     }
+    printf("Cooldown: %d\n", cooldown);
     if (send(sockfd, &repeatable, 1, 0) == -1) // repeatable
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
+    printf("Repeatable: %d\n", repeatable);
   }
   if (send(sockfd, "s", 1, 0) == -1) // stop the update
     perror("send");
