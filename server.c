@@ -926,12 +926,6 @@ void getTransactionList(int sockfd,int numbytes)
       exit(1);
     }
     printf("Repeatable: %d\n", repeatable);
-    if (send(sockfd, "c", 1, 0) == -1) // stop the update
-      perror("send");
-    if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
-      perror("recv");
-      exit(1);
-    }
   }
   if (send(sockfd, "s", 1, 0) == -1) // stop the update
     perror("send");
