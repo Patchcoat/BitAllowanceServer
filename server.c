@@ -972,11 +972,11 @@ void getEntityList(int sockfd,int numbytes)
   while ((row = mysql_fetch_row(res))) {
     char buffer[1];
     uint32_t id = atoi(row[0]);
-    char *username = row[1];
-    char *displayName = row[2];
-    char *birthday = row[3];
-    char *email = row[4];
-    char *value = row[6];
+    char *username = row[2];
+    char *displayName = row[3];
+    char *birthday = row[4];
+    char *email = row[5];
+    char *value = row[7];
     unsigned long *lengths = mysql_fetch_lengths(res);
     if (send(sockfd, "u", 1, 0) == -1) // remote update
       perror("send");
