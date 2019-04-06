@@ -804,6 +804,7 @@ void getTransactionList(int sockfd,int numbytes)
     count = 0;
   else
     count = mysql_num_rows(res);
+  printf("count %d\n", count);
   if (send(sockfd, &count, sizeof(uint32_t), 0) == -1)
     perror("send");
   if (count == 0)
@@ -1014,13 +1015,11 @@ int normal(int sockfd, int numbytes)
   char *pub_key = "public key\0";
   if (send(sockfd, pub_key, 12, 0) == -1)
     perror("send");
-  printf("sent key\n");
   char pub_key_in[500];
   if ((numbytes = recv(sockfd, pub_key_in, 500, 0)) == -1) {
     perror("recv");
     exit(1);
   }
-  printf("got key\n");
   if (send(sockfd, "_", 1, 0) == -1)
     perror("send");
   char type[4];
