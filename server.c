@@ -816,6 +816,7 @@ void getTransactionList(int sockfd,int numbytes)
     return;
 
   while ((row = mysql_fetch_row(res))) {
+    printf("start\n");
     char buffer[1];
     uint32_t id = atoi(row[0]);
     char *value = row[1];
