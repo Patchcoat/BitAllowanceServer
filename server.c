@@ -931,7 +931,7 @@ void getTransactionList(int sockfd,int numbytes)
 
   mysql_free_result(res);
   free(query);
-  printf("server: received query from database");
+  printf("server: received query from database\n");
 }
 
 void getEntityList(int sockfd,int numbytes)
