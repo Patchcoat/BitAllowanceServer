@@ -788,7 +788,7 @@ void getTransactionList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE transactionID = %u", id);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID = %u", id);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;)
     /* do nothing */;
@@ -928,7 +928,7 @@ void getEntityList(int sockfd,int numbytes)
     exit(1);
   }
   char *query;
-  int size = asprintf(&query, "SELECT * FROM transaction WHERE entityID = %u", id);
+  int size = asprintf(&query, "SELECT * FROM transaction WHERE reserveID = %u", id);
   printf("query: %s\n", query);
   for(; mysql_next_result(con) == 0;)
     /* do nothing */;
