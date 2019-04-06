@@ -999,35 +999,35 @@ void getEntityList(int sockfd,int numbytes)
       exit(1);
     }
     printf("ID: %d\n", id);
-    if (send(sockfd, value, lengths[6], 0) == -1) // value
+    if (send(sockfd, value, lengths[7], 0) == -1) // value
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Value: %s\n", value);
-    if (send(sockfd, username, lengths[1], 0) == -1) // username
+    if (send(sockfd, username, lengths[2], 0) == -1) // username
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Username: %s\n", username);
-    if (send(sockfd, displayName, lengths[2], 0) == -1) // displayName
+    if (send(sockfd, displayName, lengths[3], 0) == -1) // displayName
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Display Name: %s\n", displayName);
-    if (send(sockfd, birthday, lengths[3], 0) == -1) // birthday
+    if (send(sockfd, birthday, lengths[4], 0) == -1) // birthday
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
       exit(1);
     }
     printf("Birthday: %s\n", birthday);
-    if (send(sockfd, email, lengths[4], 0) == -1) // email
+    if (send(sockfd, email, lengths[5], 0) == -1) // email
       perror("send");
     if ((numbytes = recv(sockfd, buffer, 1, 0)) == -1) {
       perror("recv");
